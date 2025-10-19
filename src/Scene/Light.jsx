@@ -1,8 +1,10 @@
 import { loadHDRTexture, updateMixer, unwrapRad } from '../Utils/Utils';
 
 class Light {
-    constructor() {
+    constructor(scene, followGroup) {
         this.dirLight = null
+        this.scene = scene
+        this.followGroup = followGroup
         this.init()
         this.loadHDR()
     }
@@ -20,15 +22,15 @@ class Light {
         shadowCam.far = 8;
         this.dirLight.shadow.mapSize.set(1024, 1024);
 
-        ref.followGroup.add(this.dirLight);
-        ref.followGroup.add(this.dirLight.target);
+        this.followGroup.add(this.dirLight);
+        this.followGroup.add(this.dirLight.target);
 
     }
 
     async loadHDR() {
         const hdrTexture = await loadHDRTexture('/textures/lobe.hdr');
-        ref.scene.environment = hdrTexture;
-        ref.scene.environmentIntensity = 1.5;
+        this.scene.environment = hdrTexture;
+        this.scene.environmentIntensity = 1.5;
     }
 
 }
