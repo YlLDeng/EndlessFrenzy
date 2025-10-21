@@ -97,44 +97,48 @@ export const unwrapRad = (r) => {
  */
 export const cloneGroupWithoutAnim = (sourceGroup) => {
     const clonedGroup = new THREE.Group();
-    clonedGroup.copy(sourceGroup); // 复制根节点属性（位置、旋转、缩放等）
     clonedGroup.name = `${sourceGroup.name}_clone_${Date.now()}`;
 
-    const boneMap = new Map();
-
-    // 递归克隆子物体
-    sourceGroup.traverse((sourceChild) => {
-        if (sourceChild === sourceGroup) return;
-
+    // 递归克隆子物体（关键：先克隆子物体，再复制根节点属性）
+    const cloneChild = (sourceChild, parentGroup) => {
         let clonedChild;
 
-        if (sourceChild.isMesh) {
+        // 1. 克隆 Mesh（含几何体、材质、变换）
+        if (sourceChild.isMesh || sourceChild.isSkinnedMesh) {
             clonedChild = new THREE.Mesh(
                 sourceChild.geometry.clone(),
                 sourceChild.material.clone()
             );
-            clonedChild.copy(sourceChild);
+            clonedChild.copy(sourceChild); // 复制所有变换（缩放、旋转、位置）
         }
 
-        // 克隆嵌套 Group
+        // 2. 克隆嵌套 Group（含变换）
         else if (sourceChild.isGroup) {
             clonedChild = new THREE.Group();
-            clonedChild.copy(sourceChild);
+            clonedChild.copy(sourceChild); // 复制 Group 的缩放、旋转等
         }
 
-        // 其他类型（如 Light 等）
+        // 3. 其他类型（如 Light、Bone 等）
         else {
-            clonedChild = sourceChild.clone();
+            clonedChild = sourceChild.clone(); // 原生 clone 已含变换
         }
 
-        // 恢复父子关系
-        const sourceParent = sourceChild.parent;
-        const clonedParent = sourceParent === sourceGroup
-            ? clonedGroup
-            : boneMap.get(sourceParent) || clonedGroup.getObjectByName(sourceParent.name);
+        // 2. 恢复父子关系
+        parentGroup.add(clonedChild);
 
-        if (clonedParent) clonedParent.add(clonedChild);
+        // 3. 递归克隆子物体的子节点
+        sourceChild.children.forEach((grandChild) => {
+            cloneChild(grandChild, clonedChild);
+        });
+    };
+
+    // 开始递归克隆（从原始模型的子物体开始）
+    sourceGroup.children.forEach((child) => {
+        cloneChild(child, clonedGroup);
     });
 
-    return clonedGroup; // 不包含动画混合器和动画片段
-}
+    // 4. 复制原始模型根节点的变换（缩放、旋转、位置）
+    clonedGroup.copy(sourceGroup);
+
+    return clonedGroup;
+};

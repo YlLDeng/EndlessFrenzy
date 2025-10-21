@@ -84,7 +84,7 @@ class MonsterManage {
 
         this.lifetimeTimer = setTimeout(() => {
             this.removeMonster(monsterAI);
-        }, 4 * 1000);
+        }, 0.5 * 1000);
 
     }
 

@@ -32,16 +32,14 @@ class ActionManage {
 
         setInterval(() => {
             monsterManage.addMonsters();
-        }, 500)
-        setInterval(() => {
-            // heroManage.attack()
-        }, 1000)
+            // monsterManage.addMonsters();
+        }, 800)
     }
 
     // 游戏主循环
     update(delta) {
-        const { HeroManage } = useGameStore.getState();
-        HeroManage.attack()
+        // const { HeroManage } = useGameStore.getState();
+        // HeroManage.attack()
 
     }
 }

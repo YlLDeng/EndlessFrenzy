@@ -9,7 +9,6 @@ class MonsterAI {
         this.stopDistance = 1.5; // 停止距离
         this.rotationSpeed = 0.1; // 转向速度
         this.actions = {}
-        this.stopDistance = 1.5;
         this.init()
     }
 

@@ -4,12 +4,12 @@ import SceneContainer from './Scene/SceneManage'
 import * as THREE from 'three';
 
 import MemoryMonitor from './Utils/MemoryLeakMonitor';
-const memoryMonitor = new MemoryMonitor();
+// const memoryMonitor = new MemoryMonitor();
 
-memoryMonitor.start(2000);
-window.addEventListener('beforeunload', () => {
-  memoryMonitor.stop();
-});
+// memoryMonitor.start(2000);
+// window.addEventListener('beforeunload', () => {
+//   memoryMonitor.stop();
+// });
 
 // 例如在 src/main.js 中
 if (import.meta.hot) {

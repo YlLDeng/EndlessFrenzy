@@ -8,21 +8,27 @@ class HeroBasics {
         rotate: new THREE.Quaternion(),
         fadeDuration: 0.5,
         runVelocity: 1.8,
-        rotateSpeed: 0.15,
+        rotateSpeed: 15,
+        rotationThreshold: 0.01,
         up: new THREE.Vector3(0, 1, 0),
         position: new THREE.Vector3(),
         targetQuaternion: new THREE.Quaternion(), // 目标旋转（朝向最近怪物）
-        isRotating: false, // 是否正在转向目标
-        isAttacking: false
+
+        isAttacking: false,
+        isMoving: false,
+        isRotatingToTarget: false,
+
+        isAlive: true,
+
+        level: 0,
+        health: 5,
+        attack: 10,
+        lastAttackTime: 0,
+        attackTimer: null,
+        attackSpeed: 2.0     //每秒攻击多少次
     };
 
     constructor() {
-        this.level = 0
-        this.health = 5
-        this.attack = 10
-        this.attackSpeed = 2     //每秒攻击多少次
-        this.lastAttackTime = 0
-        this.alive = true
         this.state = HeroBasics.state;
     }
 }

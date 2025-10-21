@@ -3,124 +3,139 @@ import { useGameStore } from '../Store/StoreManage';
 import HeroBasics from './HeroBasics';
 
 class HeroAnimate extends HeroBasics {
-    constructor(model, animations) {
+    constructor(hero, animations) {
         super();
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
-        this.model = model;
+        this.hero = hero;
         this.animations = animations;
-
-        this.mixer = null;
-        this.actions = {};
-        this.lastCurrent = null; // 记录上一个播放的动画，用于过渡
-
+        this.mixer = new THREE.AnimationMixer(this.hero);
+        this.actions = {}
+        this.AnimationStates = {
+            Idle: {
+                from: ['Run', 'Attack', 'Idle'], // 允许从这些状态切换到Idle
+                clip: 'Idle1' // 对应的动画片段名
+            },
+            Run: {
+                from: ['Idle', 'Run'], // 允许从Idle/Run切换到Run
+                clip: 'Run_Normal'
+            },
+            Attack: {
+                from: ['Idle', 'Run'], // 允许从Idle/Run切换到Attack
+                clip: 'caitlyn_skin11_attack1.anm',
+                isSingle: false // 单次动画（非循环）
+            }
+        };
         this.init();
     }
 
     init() {
         this.setAnimate();
         useGameStore.getState().addLoop((delta) => {
-            this.checkAnimate(delta);
+            this.update(delta);
         });
     }
 
-    // 新增：获取攻击速度并同步动画播放速度
-    // 在 HeroAnimate 的 syncAttackAnimWithSpeed 中增加强制限制
-    syncAttackAnimWithSpeed = () => {
-        const heroControl = this.getState().HeroManage.HeroControl;
-        const attackSpeed = heroControl?.attackSpeed || 2;
-        const attackInterval = 1 / attackSpeed; // 攻击间隔（秒）
-
-        const attackAction = this.actions.Attack;
-        if (!attackAction) return;
-
-        const attackAnimDuration = attackAction.getClip().duration;
-        // 计算理论播放倍率（让动画时长 = 攻击间隔）
-        let timeScale = attackAnimDuration / attackInterval;
-
-        // 强制：若动画原始时长 > 攻击间隔，倍率至少为 1.1（确保动画更快结束）
-        if (attackAnimDuration > attackInterval) {
-            timeScale = Math.max(timeScale, 1.1);
-        }
-
-        attackAction.setEffectiveTimeScale(timeScale);
-        // 打印实际动画时长（方便验证）
-    };
-
-
     setAnimate = () => {
-        this.mixer = new THREE.AnimationMixer(this.model);
-        // 初始化动画动作（确保与state.current的可能值对应）
-        this.actions = {
-            Idle: this.mixer.clipAction(this.animations.find(item => item.name.includes('Idle1'))),
-            Run: this.mixer.clipAction(this.animations.find(item => item.name.includes('Run_Normal'))),
-            Attack: this.mixer.clipAction(this.animations.find(item => item.name == 'caitlyn_skin11_attack1.anm')),
-        };
-
-        // 启用所有动作并初始化状态
-        Object.values(this.actions).forEach(action => {
-            action.enabled = true;
-            action.setEffectiveTimeScale(1);
-            action.stop(); // 初始全部停止，等待状态触发
+        Object.keys(this.AnimationStates).forEach(state => {
+            const { clip: clipName, isSingle } = this.AnimationStates[state];
+            const clip = this.animations.find(anim => anim.name.includes(clipName));
+            if (!clip) {
+                console.error(`动画片段 ${clipName} 不存在`);
+                return;
+            }
+            const action = this.mixer.clipAction(clip);
+            // 设置循环模式（单次动画用LoopOnce，循环动画用LoopRepeat）
+            action.loop = isSingle ? THREE.LoopOnce : THREE.LoopRepeat;
+            action.clampWhenFinished = isSingle; // 单次动画结束后停在最后一帧
+            action.setEffectiveTimeScale(1); // 初始速度
+            action.stop(); // 初始停止，等待触发
+            this.actions[state] = action;
         });
 
-        this.syncAttackAnimWithSpeed()
         // 初始播放Idle动画
         this.actions.Idle.play();
-        this.lastCurrent = 'Idle';
-        this.state.current = 'Idle';
     };
 
-    // 每帧检查并切换动画
-    checkAnimate = (delta) => {
-        const { current, fadeDuration } = this.state;
-
-        if (current !== this.lastCurrent) {
-            this.switchAnimation(this.lastCurrent, current, fadeDuration);
-            this.lastCurrent = current; // 更新记录的状态
+    update = (delta) => {
+        // 优先处理攻击状态
+        if (this.state.isAttacking) {
+            this.switchState('Attack');
+        } else {
+            // 移动状态判断（修复：严格根据isMoving切换，避免中间状态）
+            if (this.state.isMoving) {
+                this.switchState('Run');
+            } else {
+                this.switchState('Idle');
+            }
         }
 
-        updateMixer(this.mixer, delta)
+        // 调整攻击动画速度（修复：获取正确的attackSpeed来源）
+        if (this.state.current === 'Attack') {
+            // 从角色状态中获取attackSpeed（确保来源正确）
+            const attackSpeed = this.getState().HeroManage.HeroControl?.state?.attackSpeed || 2;
+            const attackAction = this.actions.Attack;
+            const attackInterval = 1 / attackSpeed;
+            const animDuration = attackAction.getClip().duration || 1;
+            attackAction.setEffectiveTimeScale(animDuration / attackInterval);
+        }
+
+        updateMixer(this.mixer, delta);
     };
 
-    // 动画过渡核心逻辑：淡入新动画，淡出旧动画
-    switchAnimation = (oldName, newName, fadeDuration) => {
-        const newAction = this.actions[newName];
-        const oldAction = this.actions[oldName];
-
-        if (!newAction || !oldAction) {
-            console.warn(`动画切换失败：${oldName} → ${newName}`);
+    switchState(targetState, fadeDuration = 0.2) {
+        if (!this.AnimationStates[targetState]) {
+            console.warn(`无效动画状态：${targetState}`);
             return;
         }
 
-        // 若切换到攻击动画，再次确认速度同步（防止动态修改攻击速度后失效）
-        if (newName === 'Attack') {
-            this.syncAttackAnimWithSpeed();
+        const currentState = this.state.current;
+        // 检查是否允许切换（修复：当前状态为空时直接允许，如初始化）
+        if (currentState && !this.AnimationStates[targetState].from.includes(currentState)) {
+            return;
         }
 
-        // 重置新动画
-        newAction.reset();
-        newAction.weight = 1.0;
+        // 状态相同则更新动画时间（避免循环动画停滞）
+        if (currentState === targetState) {
+            // 对循环动画（如Run/Idle），确保动画持续播放
+            if (!this.AnimationStates[targetState].isSingle) {
+                this.actions[targetState].play(); // 强制保持播放状态
+            }
+            return;
+        }
+
+        const oldAction = currentState ? this.actions[currentState] : null;
+        const newAction = this.actions[targetState];
+
+        // 停止旧动画的过渡并淡出
+        if (oldAction) {
+            oldAction.stopFading();
+            oldAction.fadeOut(fadeDuration);
+            // 关键：循环动画淡出后强制停止，避免残留影响
+            if (!this.AnimationStates[currentState].isSingle) {
+                setTimeout(() => {
+                    if (this.state.current === targetState) { // 确保已切换到新状态
+                        oldAction.stop();
+                    }
+                }, fadeDuration * 1000);
+            }
+        }
+
+        // 重置并激活新动画
+        if (this.AnimationStates[targetState].isSingle) {
+            newAction.reset(); // 单次动画从头开始
+        } else {
+            newAction.time = 0; // 循环动画重置时间（可选，避免从上次位置开始）
+        }
+
         newAction.stopFading();
-        oldAction.stopFading();
+        newAction.fadeIn(fadeDuration);
+        newAction.play(); // 强制播放新动画
 
-        // 同步时间（仅非Idle动画）
-        if (newName !== 'Idle') {
-            const oldDuration = oldAction.getClip().duration || 1;
-            const newDuration = newAction.getClip().duration || 1;
-            newAction.time = oldAction.time * (newDuration / oldDuration);
-        }
-
-        // 关键：用公开API crossFadeFrom 替代 _scheduleFading
-        newAction.crossFadeFrom(oldAction, fadeDuration, true); // 从旧动画淡入
-        newAction.play();
-    };
-
-    isAnimationFinished = (clipName) => {
-        const action = this.actions[clipName];
-        if (!action) return true;
-        return action.time >= action.getClip().duration * 0.99;
-    };
+        // 更新当前状态
+        this.state.current = targetState;
+        console.log(`动画状态切换：${currentState || 'None'} → ${targetState}`);
+    }
 
 }
 
