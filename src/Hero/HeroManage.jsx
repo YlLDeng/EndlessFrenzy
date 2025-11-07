@@ -2,7 +2,7 @@ import { loadHDRTexture, loadGLTFModel } from '../Utils/Utils';
 import { useGameStore, useDefaultSetting, useHeroModelDict } from '../Store/StoreManage';
 import HeroControl from './HeroControl'
 import HeroAnimate from './HeroAnimate'
-import HeroAutoAttack from './HeroAutoAttack'
+import HeroAttack from './HeroAttack'
 
 class HeroManage {
     constructor(scene, followGroup, camera, heroName) {
@@ -26,9 +26,9 @@ class HeroManage {
 
     async init() {
         await this.initModel();
-        this.HeroControl = new HeroControl(this.hero)
         this.HeroAnimate = new HeroAnimate(this.hero, this.animations)
-        this.HeroAutoAttack = new HeroAutoAttack(this.hero)
+        this.HeroControl = new HeroControl(this.hero)
+        this.HeroAttack = new HeroAttack(this.hero)
     }
 
     waitForLoad() {
@@ -54,7 +54,7 @@ class HeroManage {
         this.animations = gltf.animations
     };
 
-    attack = ()=>{
+    attack = () => {
         this.HeroControl.attackTarget()
     }
 

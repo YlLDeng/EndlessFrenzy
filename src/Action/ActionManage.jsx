@@ -8,7 +8,6 @@ class ActionManage {
         this.setData = useGameStore.getState().setData
         this.getState = useGameStore.getState
         this.init()
-
     }
 
     async init() {
@@ -30,16 +29,15 @@ class ActionManage {
         setData('MonsterManage', monsterManage);
         await monsterManage.waitForLoad();
 
-        setInterval(() => {
-            monsterManage.addMonsters();
-        }, 1000)
+        // setInterval(() => {
+        // monsterManage.addMonsters();
+        // }, 1000)
     }
 
     // 游戏主循环
     update(delta) {
         // const { HeroManage } = useGameStore.getState();
         // HeroManage.attack()
-
     }
 }
 

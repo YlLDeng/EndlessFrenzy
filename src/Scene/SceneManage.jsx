@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 
 import ActionManage from '../Action/ActionManage';
+import UIManage from '../UI/UIManage';
 
 import { createMainCamera } from './Camera';
 import Controls from './Controls';
@@ -70,6 +71,8 @@ class GameScene {
         setData('floor', new Floor(scene, renderer));
 
         setData('ActionManage', new ActionManage());
+
+        setData('UIManage', new UIManage());
     }
 
     update = () => {

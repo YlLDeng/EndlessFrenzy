@@ -12,9 +12,13 @@ class Controls {
 
     init() {
         this.controls = new OrbitControls(this.camera, this.domElement);
-        this.controls.target.set(0, 1, 0);
+        this.controls.target.set(2.8122324202052416, 1, 2.066584794418174);
         this.controls.enableDamping = true;
         this.controls.enablePan = false;
+        this.controls.enableRotate = false;
+        this.controls.enableZoom = false;
+
+
         this.controls.maxPolarAngle = Math.PI / 2 - 0.05;
         this.update();
         useGameStore.getState().addLoop(() => {

@@ -3,7 +3,7 @@ import { useGameStore } from '../Store/StoreManage';
 import * as THREE from 'three';
 
 class Bullet {
-    constructor(hero, monster, attackSpeed, onHitCallback) {
+    constructor(hero, monster, onHitCallback) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
 
@@ -13,7 +13,7 @@ class Bullet {
         this.onHitCallback = onHitCallback; // 击中回调（必传）
 
         // 子弹属性
-        this.speed = attackSpeed * 5; // 飞行速度（与攻击速度关联，可调整倍率）
+        this.speed = 5; // 飞行速度（与攻击速度关联，可调整倍率）
         this.radius = 0.2; // 碰撞检测半径
         this.isFlying = false; // 飞行状态标记
         this.isHit = false; // 击中标记
@@ -35,9 +35,7 @@ class Bullet {
         });
     }
 
-    // 创建精灵子弹（使用精灵贴图）
     createBulletSprite() {
-        // 1. 加载精灵贴图（这里用基础纹理示例，实际需替换为子弹贴图路径）
         const textureLoader = new THREE.TextureLoader();
         const bulletTexture = textureLoader.load('/Textures/bullet.png', (texture) => {
             // 贴图加载完成后设置精灵材质
@@ -55,7 +53,7 @@ class Bullet {
 
         // 3. 创建精灵对象（大小可调整）
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(0.5, 0.5, 1); // 子弹大小（根据场景比例调整）
+        sprite.scale.set(0.14, 0.14, 1); // 子弹大小（根据场景比例调整）
         sprite.visible = false; // 初始隐藏
 
         this.scene.add(sprite);
@@ -66,14 +64,14 @@ class Bullet {
         if (!this.hero || !this.monster || this.isFlying) return;
 
         const heroPos = new THREE.Vector3();
-        this.hero.getWorldPosition(heroPos); 
+        this.hero.getWorldPosition(heroPos);
         const heroForward = new THREE.Vector3(0, 0, 1);
-        heroForward.applyQuaternion(this.hero.quaternion); 
+        heroForward.applyQuaternion(this.hero.quaternion);
         const startPos = heroPos.addScaledVector(heroForward, 1);
 
         const targetPos = new THREE.Vector3();
         this.monster.getWorldPosition(targetPos);
-        targetPos.y += 0.5; 
+        targetPos.y += 0.5;
 
         this.bulletSprite.position.copy(startPos);
         this.bulletSprite.visible = true;
@@ -81,7 +79,7 @@ class Bullet {
         this.isHit = false;
 
         this.targetPos = targetPos;
-        this.direction = new THREE.Vector3().subVectors(targetPos, startPos).normalize(); 
+        this.direction = new THREE.Vector3().subVectors(targetPos, startPos).normalize();
         this.totalDistance = startPos.distanceTo(targetPos);
     }
 

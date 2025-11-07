@@ -30,7 +30,7 @@ export const useGameStore = create((set, get) => ({
     MonsterManage: null,
     ActionManage: null,
     LoopArr: [],
-    FPS: 60,
+    FPS: 120,
     floor: null,
     followGroup: null,
     setData: (key, value) => set((state) => ({ [key]: value })),
