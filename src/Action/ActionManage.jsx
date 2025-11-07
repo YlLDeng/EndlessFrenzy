@@ -29,9 +29,9 @@ class ActionManage {
         setData('MonsterManage', monsterManage);
         await monsterManage.waitForLoad();
 
-        // setInterval(() => {
-        // monsterManage.addMonsters();
-        // }, 1000)
+        setInterval(() => {
+            monsterManage.addMonsters();
+        }, 1000)
     }
 
     // 游戏主循环

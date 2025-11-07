@@ -14,20 +14,21 @@ class HeroAnimate extends HeroBasics {
         this.actions = {};
         this.AnimationStates = {
             Idle: {
-                from: ['Run', 'Attack', 'Idle'],
+                from: ['Run', 'Attack'],
                 clip: 'Idle1'
             },
             Run: {
-                from: ['Idle', 'Run'],
+                from: ['Idle', 'Attack'],
                 clip: 'Run_Normal'
             },
             Attack: {
-                from: ['Idle', 'Run', 'Attack'],
+                from: ['Idle', 'Run'],
                 clip: 'caitlyn_skin11_attack1.anm',
                 isSingle: true
             }
         };
-        this.lastState = null
+        this.lastState = null;
+        this.fadeing = false;
         this.init();
     }
 
@@ -43,7 +44,6 @@ class HeroAnimate extends HeroBasics {
             const { clip: clipName, isSingle } = this.AnimationStates[state];
             const clip = this.animations.find(anim => anim.name.includes(clipName));
             if (!clip) {
-                console.error(`动画片段 ${clipName} 不存在`);
                 return;
             }
             const action = this.mixer.clipAction(clip);
@@ -56,19 +56,25 @@ class HeroAnimate extends HeroBasics {
 
         this.actions.Idle.play();
         this.state.currentState = 'Idle';
-        this.lastState = 'Idle'
+        this.lastState = 'Idle';
+
+        this.mixer.addEventListener('finished', (e) => {
+            const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
+
+            if (finishedActionName && this.AnimationStates[finishedActionName]?.isSingle) {
+
+                this.state.currentState = "Idle";
+
+                const heroAttack = this.getState().HeroManage.HeroAttack;
+                if (heroAttack) {
+                    heroAttack.isAttacking = false;
+                }
+            }
+        });
     };
 
     update = (delta) => {
-        if (this.state.currentState === 'Attack') {
-            const attackSpeed = this.getState().HeroManage.HeroControl?.state?.attackSpeed || 2;
-            const attackAction = this.actions.Attack;
-            const attackInterval = 1 / attackSpeed;
-            const animDuration = attackAction.getClip().duration || 1;
-            attackAction.setEffectiveTimeScale(animDuration / attackInterval);
-        }
         this.switchState(this.state.currentState);
-
         updateMixer(this.mixer, delta);
     };
 
@@ -78,10 +84,7 @@ class HeroAnimate extends HeroBasics {
         }
 
         const currentState = this.lastState;
-        if (!this.AnimationStates[targetState].from.includes(currentState)) {
-            this.actions[targetState]?.play();
-            return;
-        }
+
         if (currentState === targetState) {
             this.actions[currentState]?.play();
             return;
@@ -90,17 +93,27 @@ class HeroAnimate extends HeroBasics {
         const oldAction = this.actions[currentState];
         const newAction = this.actions[targetState];
 
-        if (oldAction) {
-            oldAction.stopFading();
-            oldAction.fadeOut(fadeDuration);
-            setTimeout(() => {
-                oldAction.stop();
-            }, fadeDuration * 1000);
+        let timeScale = 1;
+        if (targetState === 'Attack') {
+            timeScale = this.state.attackSpeed;
         }
 
-        newAction.stopFading();
-        newAction.fadeIn(fadeDuration);
-        newAction.play();
+        if (!this.AnimationStates[targetState].from.includes(currentState)) {
+            if (oldAction) oldAction.stop();
+            newAction?.reset().play();
+            this.lastState = targetState;
+            return;
+        }
+
+        if (oldAction) {
+            oldAction.setEffectiveTimeScale(1);
+            oldAction.fadeOut(fadeDuration);
+        }
+
+        newAction.setEffectiveTimeScale(timeScale)
+            .reset()
+            .fadeIn(fadeDuration)
+            .play();
 
         this.lastState = targetState;
     }
