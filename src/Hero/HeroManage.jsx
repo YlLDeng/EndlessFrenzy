@@ -18,10 +18,7 @@ class HeroManage {
         this.hero = null
 
         this.loadModel = useHeroModelDict.getState()[heroName]
-        this.loadPromise = new Promise(async (resolve) => {
-            await this.init();
-            resolve();
-        });
+        this.loadPromise = this.init();
     }
 
     async init() {
@@ -31,13 +28,9 @@ class HeroManage {
         this.HeroAttack = new HeroAttack(this.hero)
     }
 
-    waitForLoad() {
-        return this.loadPromise;
-    }
-
     initModel = async () => {
         const gltf = await loadGLTFModel(this.loadModel);
-        gltf.scene.scale.set(0.01, 0.01, 0.01)
+        gltf.scene.scale.set(0.02, 0.02, 0.02)
         this.hero = gltf.scene
         this.scene.add(this.hero)
 

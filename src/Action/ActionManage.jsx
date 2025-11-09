@@ -2,6 +2,7 @@
 import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
 import HeroManage from '../Hero/HeroManage';
 import MonsterManage from '../Monster/MonsterManage';
+import SkillManage from '../Skill/SkillManage';
 
 class ActionManage {
     constructor() {
@@ -11,7 +12,6 @@ class ActionManage {
     }
 
     async init() {
-
         await this.initGame()
         useGameStore.getState().addLoop((delta) => {
             this.update(delta);
@@ -21,17 +21,17 @@ class ActionManage {
     initGame = async () => {
         const { scene, camera, renderer, followGroup, setData } = useGameStore.getState();
 
-        const heroManage = new HeroManage(scene, followGroup, camera, useDefaultSetting.getState().defaultHero);
-        setData('HeroManage', heroManage);
-        await heroManage.waitForLoad();
+        const _HeroManage = new HeroManage(scene, followGroup, camera, useDefaultSetting.getState().defaultHero);
+        setData('HeroManage', _HeroManage);
+        await _HeroManage.loadPromise;
 
-        const monsterManage = new MonsterManage(scene);
-        setData('MonsterManage', monsterManage);
-        await monsterManage.waitForLoad();
+        const _MonsterManage = new MonsterManage(scene);
+        setData('MonsterManage', _MonsterManage);
+        await _MonsterManage.loadPromise;
 
-        setInterval(() => {
-            monsterManage.addMonsters();
-        }, 1000)
+        const _SkillManage = new SkillManage();
+        setData('SkillManage', _SkillManage);
+        await _SkillManage.loadPromise;
     }
 
     // 游戏主循环

@@ -2,25 +2,30 @@
 import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
 
 class MonsterAI {
-    constructor(monsterMesh, heroManage) {
+    constructor(monsterMesh) {
+        this.setData = useGameStore.getState().setData;
+        this.getState = useGameStore.getState;
+        this.heroManage = this.getState().HeroManage
         this.monster = monsterMesh; // 单个怪物的Mesh/SkinnedMesh
-        this.heroManage = heroManage; // 英雄管理器（用于获取英雄位置）
         this.speed = 1 + Math.random() * 0.5; // 每个怪物速度略有不同
         this.stopDistance = 1.5; // 停止距离
         this.rotationSpeed = 0.1; // 转向速度
         this.actions = {}
+        this.updateFn = null;
         this.init()
     }
 
     init() {
-        useGameStore.getState().addLoop((delta) => {
+        this.updateFn = (delta) => {
             this.update(delta);
-        });
+        };
+
+        useGameStore.getState().addLoop(this.updateFn);
     }
 
     // 单个怪物的移动逻辑
     update(delta) {
-        if (!this.heroManage?.hero) return;
+        if (!this.heroManage?.hero || !this.monster) return;
 
         // 获取自身和英雄的世界坐标
         const monsterPos = new THREE.Vector3();
@@ -67,6 +72,16 @@ class MonsterAI {
         return angle;
     }
 
+    dispose() {
+        const { removeLoop } = useGameStore.getState();
+        if (this.updateFn && removeLoop) {
+            removeLoop(this.updateFn);
+        }
+
+        this.monster = null;
+        this.heroManage = null;
+        this.updateFn = null;
+    }
 }
 
 export default MonsterAI

@@ -25,7 +25,6 @@ class GameScene {
         await this.initModules();
     }
 
-    // 初始化核心资源（场景、相机、渲染器、时钟等）
     async initCore() {
         const { setData } = useGameStore.getState();
         const container = useGameStore.getState().container;
@@ -33,7 +32,7 @@ class GameScene {
         // 场景
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x5e5d5d);
-        scene.fog = new THREE.Fog(0x5e5d5d, 2, 40);
+        scene.fog = new THREE.Fog(0x5e5d5d, 2, 80);
         setData('scene', scene);
 
         // 相机
@@ -48,6 +47,8 @@ class GameScene {
         renderer.toneMappingExposure = 0.5;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
         container.appendChild(renderer.domElement);
 
         setData('renderer', renderer);

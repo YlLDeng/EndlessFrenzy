@@ -1,6 +1,5 @@
 import { useGameStore } from '../Store/StoreManage';
 import HeroBasics from './HeroBasics';
-import Bullet from '../Skill/Bullet'
 import * as THREE from 'three';
 
 class HeroAttack extends HeroBasics {
@@ -147,15 +146,16 @@ class HeroAttack extends HeroBasics {
         }
     }
 
-    createBullet() {
+    createBullet = () => {
         if (!this.nearestMonster) return;
-
-        new Bullet(
+        const { SkillManage } = this.getState()
+        SkillManage.createBullet(
             this.model,
             this.nearestMonster,
             (hitInfo) => {
                 this.getState().MonsterManage.removeMonster(hitInfo.target.monsterAI);
-            }
+            },
+            "L1"
         );
     }
 

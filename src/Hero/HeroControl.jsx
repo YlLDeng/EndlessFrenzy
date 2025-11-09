@@ -12,7 +12,7 @@ class HeroControl extends HeroBasics {
         this.model = model;
         this.rotateSmoothness = 50.0;
         this.minRotateAngle = 0.001;
-        this.runVelocity = 3.8;
+        this.runVelocity = 6.8;
         this.position = new THREE.Vector3();
         this.up = new THREE.Vector3(0, 1, 0);
         this.ease = new THREE.Vector3();

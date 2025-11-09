@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import * as THREE from 'three';
 
-// 模型加载路径字典
+// 子弹模型加载路径字典
+export const useBulletModelDict = create((set) => ({
+    'L1': '/Model/Bullet/bullet.glb'
+}));
+
+
+// 角色模型加载路径字典
 export const useHeroModelDict = create((set) => ({
     '女警': '/Model/Hero/pulsefire_caitlyn.glb'
 }));
@@ -40,7 +46,10 @@ export const useGameStore = create((set, get) => ({
             return { LoopArr: [...state.LoopArr, fn] };
         }
         return state; // 已存在则不更新
-    })
+    }),
+    removeLoop: (fn) => set((state) => ({
+        LoopArr: state.LoopArr.filter(loopFn => loopFn !== fn)
+    }))
 }));
 
 if (import.meta.env.DEV) {
