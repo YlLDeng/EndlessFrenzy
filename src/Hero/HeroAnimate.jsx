@@ -23,7 +23,7 @@ class HeroAnimate extends HeroBasics {
             },
             Attack: {
                 from: ['Idle', 'Run'],
-                clip: 'caitlyn_skin11_attack1.anm',
+                clip: 'caitlyn_skin11_attackfast1.anm',
                 isSingle: true
             }
         };

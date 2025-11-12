@@ -1,11 +1,13 @@
-import { loadHDRTexture, loadGLTFModel } from '../Utils/Utils';
-import { useGameStore, useDefaultSetting, useHeroModelDict } from '../Store/StoreManage';
+import { loadGLTFModel } from '../Utils/Utils';
+import { useGameStore, useHeroModelDict } from '../Store/StoreManage';
 import HeroControl from './HeroControl'
 import HeroAnimate from './HeroAnimate'
 import HeroAttack from './HeroAttack'
+import HeroBasics from './HeroBasics';
 
-class HeroManage {
+class HeroManage extends HeroBasics {
     constructor(scene, followGroup, camera, heroName) {
+        super()
         this.setData = useGameStore.getState().setData
         this.getState = useGameStore.getState
 
@@ -44,6 +46,7 @@ class HeroManage {
                 object.material.metalnessMap = object.material.map;
             }
         });
+
         this.animations = gltf.animations
     };
 

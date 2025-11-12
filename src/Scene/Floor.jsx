@@ -7,8 +7,8 @@ class Floor {
         this.getState = useGameStore.getState
         this.scene = scene
 
-        this.size = 200;
-        this.repeat = 16;
+        this.size = 100;
+        this.repeat = 10;
         this.maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         this.plane = null
         this.init()
@@ -26,13 +26,11 @@ class Floor {
         floorT.wrapS = floorT.wrapT = THREE.RepeatWrapping; // 纹理超出边界时重复（而非拉伸）
         floorT.anisotropy = this.maxAnisotropy; // 提高斜视角下的纹理清晰度（值通常为渲染器的maxAnisotropy）
 
-        // 加载法线纹理（用于表现凹凸细节，增强立体感）
         const floorN = new THREE.TextureLoader().load('/textures/FloorsCheckerboard_S_Normal.jpg');
         floorN.repeat.set(this.repeat, this.repeat); // 与漫反射纹理保持相同的重复次数
         floorN.wrapS = floorN.wrapT = THREE.RepeatWrapping; // 重复模式
         floorN.anisotropy = this.maxAnisotropy; // 提高清晰度
 
-        // 创建地板材质和网格
         const mat = new THREE.MeshStandardMaterial({
             map: floorT, // 漫反射纹理
             normalMap: floorN, // 法线纹理

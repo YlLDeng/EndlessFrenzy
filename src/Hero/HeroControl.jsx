@@ -114,7 +114,7 @@ class HeroControl extends HeroBasics {
 
         followGroup.position.copy(this.position);
 
-        const floor = this.getState().floor; // 修复：加括号
+        const floor = this.getState().floor;
         const dx = this.position.x - floor.plane.position.x;
         const dz = this.position.z - floor.plane.position.z;
         if (Math.abs(dx) > floor.floorDecal) floor.plane.position.x += dx;

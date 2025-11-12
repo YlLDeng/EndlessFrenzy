@@ -6,7 +6,7 @@ class HeroBasics {
         isAlive: true,
         level: 0,
         health: 5,
-        damage: 10,
+        damage: 1,
         attackSpeed: 3.0
     };
 

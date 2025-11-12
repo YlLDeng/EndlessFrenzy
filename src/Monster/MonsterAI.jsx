@@ -1,5 +1,6 @@
-// 怪物AI控制器（每个怪物一个实例）
 import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
+import { gsap } from 'gsap';
+import * as THREE from 'three';
 
 class MonsterAI {
     constructor(monsterMesh) {
@@ -12,6 +13,9 @@ class MonsterAI {
         this.rotationSpeed = 0.1; // 转向速度
         this.actions = {}
         this.updateFn = null;
+        this.health = 10
+        this.textGroup = new THREE.Group();
+        this.monster.add(this.textGroup)
         this.init()
     }
 
@@ -19,39 +23,30 @@ class MonsterAI {
         this.updateFn = (delta) => {
             this.update(delta);
         };
-
         useGameStore.getState().addLoop(this.updateFn);
     }
 
-    // 单个怪物的移动逻辑
     update(delta) {
         if (!this.heroManage?.hero || !this.monster) return;
 
-        // 获取自身和英雄的世界坐标
         const monsterPos = new THREE.Vector3();
         const heroPos = new THREE.Vector3();
         this.monster.getWorldPosition(monsterPos);
         this.heroManage.hero.getWorldPosition(heroPos);
 
-        // 计算方向向量（指向英雄）
         const direction = new THREE.Vector3()
             .subVectors(heroPos, monsterPos)
             .setY(0)
             .normalize();
 
-        // 计算距离
         const distance = monsterPos.distanceTo(heroPos);
-
-        // 转向英雄
         this.lookAtHero(direction);
 
-        // 移动到英雄（距离足够时）
         if (distance > this.stopDistance) {
             this.moveTowards(direction, delta);
         }
     }
 
-    // 转向英雄（独立计算朝向）
     lookAtHero(direction) {
         const targetRotationY = Math.atan2(direction.x, direction.z);
         const currentRotationY = this.monster.rotation.y;
@@ -59,17 +54,88 @@ class MonsterAI {
         this.monster.rotation.y += rotationDiff * this.rotationSpeed;
     }
 
-    // 向英雄移动（独立计算位移）
     moveTowards(direction, delta) {
         const moveStep = direction.multiplyScalar(this.speed * delta);
         this.monster.position.add(moveStep);
     }
 
-    // 角度归一化（处理360度循环）
     normalizeAngle(angle) {
         while (angle > Math.PI) angle -= 2 * Math.PI;
         while (angle < -Math.PI) angle += 2 * Math.PI;
         return angle;
+    }
+
+    showTxt(txt) {
+        const text = String(txt);
+        const texture = this.createCanvasTexture(text);
+
+        const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 1,
+            depthTest: false,
+            depthWrite: false
+        });
+
+        const sprite = new THREE.Sprite(material);
+
+        const aspect = texture.image.width / texture.image.height;
+        const spriteHeight = 150;
+        sprite.scale.set(spriteHeight * aspect, spriteHeight, 1);
+
+        sprite.position.set(0, 200, 0);
+
+        this.textGroup.add(sprite);
+
+        this.monster.updateWorldMatrix(true, true);
+        const duration = 0.5;
+        const travelHeight = 100;
+
+        gsap.timeline({
+            onComplete: () => {
+                this.textGroup.remove(sprite);
+                material.dispose();
+                texture.dispose();
+            }
+        })
+            .to(sprite.position, {
+                duration: duration,
+                y: `+=${travelHeight}`,
+                ease: "power2.out"
+            }, 0)
+
+            .to(material, {
+                duration: duration * 0.75,
+                opacity: 0
+            }, duration * 0.25);
+    }
+
+    createCanvasTexture(text) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const fontSize = 32;
+
+        context.font = `${fontSize}px Arial`;
+        const metrics = context.measureText(text);
+        const textWidth = metrics.width;
+
+        canvas.width = textWidth + 20;
+        canvas.height = fontSize + 20;
+
+        context.font = `${fontSize}px Arial`;
+
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = '#6a0505ff'; // 黑色文字
+
+        context.fillText(text, canvas.width / 2, canvas.height / 2 + 5);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.needsUpdate = true;
+
+        return texture;
     }
 
     dispose() {
@@ -77,6 +143,17 @@ class MonsterAI {
         if (this.updateFn && removeLoop) {
             removeLoop(this.updateFn);
         }
+
+        gsap.killTweensOf(this.textGroup.children);
+        this.textGroup.traverse((child) => {
+            if (child.isSprite) {
+                child.material.dispose();
+                if (child.material.map) {
+                    child.material.map.dispose();
+                }
+            }
+        });
+        if (this.monster) this.monster.remove(this.textGroup);
 
         this.monster = null;
         this.heroManage = null;

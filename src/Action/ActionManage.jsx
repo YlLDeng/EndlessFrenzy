@@ -3,7 +3,8 @@ import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
 import HeroManage from '../Hero/HeroManage';
 import MonsterManage from '../Monster/MonsterManage';
 import SkillManage from '../Skill/SkillManage';
-
+import UIManage from '../UI/UIManage';
+import { gsap } from 'gsap';
 class ActionManage {
     constructor() {
         this.setData = useGameStore.getState().setData
@@ -19,7 +20,7 @@ class ActionManage {
     }
 
     initGame = async () => {
-        const { scene, camera, renderer, followGroup, setData } = useGameStore.getState();
+        const { scene, camera, followGroup, setData } = useGameStore.getState();
 
         const _HeroManage = new HeroManage(scene, followGroup, camera, useDefaultSetting.getState().defaultHero);
         setData('HeroManage', _HeroManage);
@@ -32,6 +33,8 @@ class ActionManage {
         const _SkillManage = new SkillManage();
         setData('SkillManage', _SkillManage);
         await _SkillManage.loadPromise;
+
+        setData('UIManage', new UIManage());
     }
 
     // 游戏主循环

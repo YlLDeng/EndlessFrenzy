@@ -3,7 +3,6 @@ import React, { userefs, useEffect, useState } from 'react';
 import { useGameStore } from '../Store/StoreManage';
 import MonsterAI from './MonsterAI'
 import MonsterAnimate from './MonsterAnimate'
-
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 class MonsterManage {
     constructor(scene) {
@@ -69,7 +68,7 @@ class MonsterManage {
 
         this.monsterGroup.add(monsterMesh);
 
-        const monsterAI = new MonsterAI(monsterMesh);
+        const monsterAI = new MonsterAI(monsterMesh, this.scene);
         monsterMesh.monsterAI = monsterAI
         this.monsterAIs.push(monsterAI);
 

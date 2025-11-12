@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
 import ActionManage from '../Action/ActionManage';
-import UIManage from '../UI/UIManage';
 
 import { createMainCamera } from './Camera';
 import Controls from './Controls';
@@ -40,14 +39,14 @@ class GameScene {
         setData('camera', camera);
 
         // 渲染器
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 0.5;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
+        renderer.setClearColor(0x000000, 0);
 
         container.appendChild(renderer.domElement);
 
@@ -61,7 +60,6 @@ class GameScene {
         this.addEventListeners();
     }
 
-    // 初始化子模块（灯光、角色、地板等）
     async initModules() {
         const { scene, camera, renderer, followGroup, setData } = useGameStore.getState();
 
@@ -72,11 +70,9 @@ class GameScene {
         setData('floor', new Floor(scene, renderer));
 
         setData('ActionManage', new ActionManage());
-
-        setData('UIManage', new UIManage());
     }
 
-    update = () => {
+    update = (time) => {
         const { scene, renderer, camera, LoopArr, FPS } = useGameStore.getState();
         const minFrameInterval = 1000 / FPS;
 
@@ -93,7 +89,6 @@ class GameScene {
             LoopArr.forEach(fn => fn(delta));
             this.lastFrameTime = currentTime;
         }
-
         requestAnimationFrame(() => this.update());
     };
 

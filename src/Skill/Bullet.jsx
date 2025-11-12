@@ -6,12 +6,10 @@ class Bullet {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
 
-        // 核心引用
         this.hero = hero;
         this.monster = monster;
         this.onHitCallback = onHitCallback;
 
-        // 子弹属性
         this.speed = 7;
         this.radius = 1.2;
         this.isFlying = false;
@@ -44,7 +42,6 @@ class Bullet {
         this.monster.getWorldPosition(targetPos);
         targetPos.y += 0.5;
 
-        // 设置子弹模型位置
         this.bulletModel.position.copy(startPos);
         this.bulletModel.visible = true;
         this.isFlying = true;
@@ -54,12 +51,10 @@ class Bullet {
         this.direction = new THREE.Vector3().subVectors(targetPos, startPos).normalize();
         this.totalDistance = startPos.distanceTo(targetPos);
 
-        // 设置子弹模型朝向目标
         this.bulletModel.lookAt(targetPos);
         this.bulletModel.rotateX(Math.PI / 2);
     }
 
-    // 帧更新：控制飞行和碰撞检测 (逻辑不变)
     update = (delta) => {
 
         const moveDistance = this.speed * delta;
@@ -76,8 +71,6 @@ class Bullet {
     };
 
     checkCollision() {
-
-
         const monsterPos = new THREE.Vector3();
         if (!this.monster) return;
 
@@ -90,7 +83,6 @@ class Bullet {
         }
     }
 
-    // 击中目标后的处理 (逻辑不变)
     onHit() {
         if (this.isHit) return;
 
@@ -111,18 +103,14 @@ class Bullet {
         this.destroy();
     }
 
-    // ♻️ 销毁子弹
     destroy() {
         if (this.bulletModel) {
-            // 从场景移除克隆的模型实例
             if (this.scene) {
                 this.scene.remove(this.bulletModel);
             }
-            // 清空模型引用
             this.bulletModel = null;
         }
 
-        // 清空其他引用
         this.hero = null;
         this.monster = null;
         this.onHitCallback = null;
