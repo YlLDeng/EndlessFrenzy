@@ -51,7 +51,7 @@ class SkillManage {
         return bulletLoadPromise;
     }
 
-    async createBullet(hero, target, onHitCallback, level = this.defaultLevel) {
+    async createBullet(hero, target, level = this.defaultLevel) {
         if (!this.Bullet_L1_Model) {
             console.warn(`Bullet model L1 not yet loaded. Waiting...`);
             await this.isLoadedPromise;
@@ -67,7 +67,6 @@ class SkillManage {
             const newBulletInstance = new Bullet(
                 hero,
                 target,
-                onHitCallback,
                 baseModel.clone() // 传入克隆后的模型
             );
             return newBulletInstance;

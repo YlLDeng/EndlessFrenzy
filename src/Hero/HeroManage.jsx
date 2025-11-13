@@ -10,6 +10,7 @@ class HeroManage extends HeroBasics {
         super()
         this.setData = useGameStore.getState().setData
         this.getState = useGameStore.getState
+        this.collisionManager = this.getState().CollisionManager
 
         this.scene = scene
         this.followGroup = followGroup
@@ -21,6 +22,10 @@ class HeroManage extends HeroBasics {
 
         this.loadModel = useHeroModelDict.getState()[heroName]
         this.loadPromise = this.init();
+        this.isInvulnerable = false;
+        this.id = THREE.MathUtils.generateUUID();
+        this.INVULNERABILITY_DURATION = 1
+        this.tag = 'hero';
     }
 
     async init() {
@@ -28,8 +33,36 @@ class HeroManage extends HeroBasics {
         this.HeroAnimate = new HeroAnimate(this.hero, this.animations)
         this.HeroControl = new HeroControl(this.hero)
         this.HeroAttack = new HeroAttack(this.hero)
+        this.initCollision()
     }
 
+    initCollision() {
+        this.collisionManager.register({
+            id: this.id,
+            mesh: this.hero,
+            tag: this.tag,
+            onCollision: this.handleCollision.bind(this)
+        });
+    }
+
+    handleCollision(otherObject) {
+        if (this.isInvulnerable) {
+            return;
+        }
+
+        if (otherObject.tag == 'monster') {
+            this.state.health -= 1;
+            console.log(`Hero took damage. Health remaining: ${this.state.health}`);
+            this.startInvulnerability();
+        }
+    }
+    startInvulnerability() {
+        this.isInvulnerable = true;
+        setTimeout(() => {
+            this.isInvulnerable = false;
+            console.log("Hero is no longer invulnerable.");
+        }, this.INVULNERABILITY_DURATION * 1000); // 转换为毫秒
+    }
     initModel = async () => {
         const gltf = await loadGLTFModel(this.loadModel);
         gltf.scene.scale.set(0.02, 0.02, 0.02)
@@ -46,7 +79,6 @@ class HeroManage extends HeroBasics {
                 object.material.metalnessMap = object.material.map;
             }
         });
-
         this.animations = gltf.animations
     };
 
@@ -54,8 +86,9 @@ class HeroManage extends HeroBasics {
         this.HeroControl.attackTarget()
     }
 
-    death = () => {
-
+    dispose() {
+        this.HeroAnimate.dispose()
+        this.updateFn = null
     }
 };
 

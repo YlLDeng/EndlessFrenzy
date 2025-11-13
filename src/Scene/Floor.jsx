@@ -7,8 +7,8 @@ class Floor {
         this.getState = useGameStore.getState
         this.scene = scene
 
-        this.size = 100;
-        this.repeat = 10;
+        this.size = 200;
+        this.repeat = 16;
         this.maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         this.plane = null
         this.init()

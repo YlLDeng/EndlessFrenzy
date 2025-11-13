@@ -1,21 +1,32 @@
-import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
+import { useGameStore } from '../Store/StoreManage';
 import { gsap } from 'gsap';
 import * as THREE from 'three';
-
+import MonsterAnimate from './MonsterAnimate'
+import MonsterControl from './MonsterControl'
+import HealthBar from '../Base/HealthBar'
 class MonsterAI {
-    constructor(monsterMesh) {
+    constructor(monster) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
         this.heroManage = this.getState().HeroManage
-        this.monster = monsterMesh; // 单个怪物的Mesh/SkinnedMesh
-        this.speed = 1 + Math.random() * 0.5; // 每个怪物速度略有不同
-        this.stopDistance = 1.5; // 停止距离
-        this.rotationSpeed = 0.1; // 转向速度
-        this.actions = {}
-        this.updateFn = null;
-        this.health = 10
+        this.collisionManager = this.getState().CollisionManager
+        this.scene = this.getState().MonsterManage.scene;
+
+        this.maxHealth = 10;
+        this.health = 10;
+        this.monster = monster;
+
         this.textGroup = new THREE.Group();
-        this.monster.add(this.textGroup)
+        this.scene.add(this.textGroup)
+
+        this.id = THREE.MathUtils.generateUUID(); // 生成唯一 ID
+        this.tag = 'monster';
+
+        this.animate = null
+        this.control = null
+        this.updateFn = null
+        this.healthBar = null
+        this.textOffset = 3
         this.init()
     }
 
@@ -24,49 +35,42 @@ class MonsterAI {
             this.update(delta);
         };
         useGameStore.getState().addLoop(this.updateFn);
+        this.initCollision()
+        this.animate = new MonsterAnimate(this.monster, this.getState().MonsterManage.monsterAnimations)
+        this.control = new MonsterControl(this.monster)
+        this.healthBar = new HealthBar(this.monster, this.maxHealth)
     }
 
     update(delta) {
-        if (!this.heroManage?.hero || !this.monster) return;
-
+        if (!this.monster) return;
         const monsterPos = new THREE.Vector3();
-        const heroPos = new THREE.Vector3();
         this.monster.getWorldPosition(monsterPos);
-        this.heroManage.hero.getWorldPosition(heroPos);
+        this.textGroup.position.copy(monsterPos).add(new THREE.Vector3(0, this.textOffset, 0));
+    }
 
-        const direction = new THREE.Vector3()
-            .subVectors(heroPos, monsterPos)
-            .setY(0)
-            .normalize();
+    initCollision() {
+        this.collisionManager.register({
+            id: this.id,
+            mesh: this.monster,
+            tag: this.tag,
+            onCollision: this.handleCollision.bind(this)
+        });
+    }
 
-        const distance = monsterPos.distanceTo(heroPos);
-        this.lookAtHero(direction);
+    handleCollision(otherObject) {
+        if (otherObject.tag === 'bullet') {
+            const damage = this.getState().HeroManage.state.damage
+            this.onHit(damage);
 
-        if (distance > this.stopDistance) {
-            this.moveTowards(direction, delta);
         }
     }
 
-    lookAtHero(direction) {
-        const targetRotationY = Math.atan2(direction.x, direction.z);
-        const currentRotationY = this.monster.rotation.y;
-        const rotationDiff = this.normalizeAngle(targetRotationY - currentRotationY);
-        this.monster.rotation.y += rotationDiff * this.rotationSpeed;
-    }
+    onHit(damage) {
+        this.health -= damage;
+        this.healthBar.updateHealth(this.health)
+        this.health = Math.max(0, this.health);
 
-    moveTowards(direction, delta) {
-        const moveStep = direction.multiplyScalar(this.speed * delta);
-        this.monster.position.add(moveStep);
-    }
-
-    normalizeAngle(angle) {
-        while (angle > Math.PI) angle -= 2 * Math.PI;
-        while (angle < -Math.PI) angle += 2 * Math.PI;
-        return angle;
-    }
-
-    showTxt(txt) {
-        const text = String(txt);
+        const text = String(damage);
         const texture = this.createCanvasTexture(text);
 
         const material = new THREE.SpriteMaterial({
@@ -74,22 +78,21 @@ class MonsterAI {
             transparent: true,
             opacity: 1,
             depthTest: false,
-            depthWrite: false
+            depthWrite: false,
         });
 
         const sprite = new THREE.Sprite(material);
 
         const aspect = texture.image.width / texture.image.height;
-        const spriteHeight = 150;
+        const spriteHeight = 1.5;
         sprite.scale.set(spriteHeight * aspect, spriteHeight, 1);
 
-        sprite.position.set(0, 200, 0);
+        sprite.position.set(0, 0, 0);
 
         this.textGroup.add(sprite);
 
-        this.monster.updateWorldMatrix(true, true);
-        const duration = 0.5;
-        const travelHeight = 100;
+        const duration = 1.5;
+        const travelHeight = 2;
 
         gsap.timeline({
             onComplete: () => {
@@ -108,12 +111,16 @@ class MonsterAI {
                 duration: duration * 0.75,
                 opacity: 0
             }, duration * 0.25);
+
+        if (this.health <= 0) {
+            this.getState().MonsterManage.removeMonster(this);
+        }
     }
 
     createCanvasTexture(text) {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        const fontSize = 32;
+        const fontSize = 12;
 
         context.font = `${fontSize}px Arial`;
         const metrics = context.measureText(text);
@@ -124,9 +131,12 @@ class MonsterAI {
 
         context.font = `${fontSize}px Arial`;
 
+        context.fillStyle = 'rgba(0, 0, 0, 0.0)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
         context.textAlign = 'center';
         context.textBaseline = 'middle';
-        context.fillStyle = '#6a0505ff'; // 黑色文字
+        context.fillStyle = '#FFFFFF';
 
         context.fillText(text, canvas.width / 2, canvas.height / 2 + 5);
 
@@ -143,21 +153,20 @@ class MonsterAI {
         if (this.updateFn && removeLoop) {
             removeLoop(this.updateFn);
         }
-
+        if (this.collisionManager) {
+            this.collisionManager.unregister(this.id);
+        }
         gsap.killTweensOf(this.textGroup.children);
+
         this.textGroup.traverse((child) => {
             if (child.isSprite) {
                 child.material.dispose();
-                if (child.material.map) {
-                    child.material.map.dispose();
-                }
+                if (child.material.map) child.material.map.dispose();
             }
         });
-        if (this.monster) this.monster.remove(this.textGroup);
-
+        if (this.scene) this.scene.remove(this.textGroup);
+        this.healthBar.dispose()
         this.monster = null;
-        this.heroManage = null;
-        this.updateFn = null;
     }
 }
 

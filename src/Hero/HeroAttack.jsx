@@ -152,20 +152,8 @@ class HeroAttack extends HeroBasics {
         SkillManage.createBullet(
             this.model,
             this.nearestMonster,
-            this.onHit,
             "L1"
         );
-    }
-
-    onHit = (hitInfo) => {
-
-        const damage = this.getState().HeroManage.state.damage
-        const monsterAI = hitInfo.target.monsterAI
-        monsterAI.health -= damage
-        monsterAI.showTxt(`${damage}`)
-        if (monsterAI.health <= 0) {
-            this.getState().MonsterManage.removeMonster(monsterAI);
-        }
     }
 
     interruptAttack() {

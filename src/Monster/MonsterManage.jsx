@@ -1,13 +1,12 @@
-import { loadGLTFModel, updateMixer, unwrapRad, checkSphereCollision, createModelWithCollisionProxy } from '../Utils/Utils';
-import React, { userefs, useEffect, useState } from 'react';
+import { loadGLTFModel } from '../Utils/Utils';
 import { useGameStore } from '../Store/StoreManage';
 import MonsterAI from './MonsterAI'
-import MonsterAnimate from './MonsterAnimate'
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 class MonsterManage {
     constructor(scene) {
         this.setData = useGameStore.getState().setData
         this.getState = useGameStore.getState
+        this.heroManage = this.getState().HeroManage
         this.scene = scene
         this.monsterGroup = new THREE.Group()
         this.monsterAIs = [];
@@ -21,7 +20,6 @@ class MonsterManage {
         this.scene.add(this.monsterGroup);
     }
 
-    // 加载怪物模型
     loadMonsterModel = async () => {
         const gltf = await loadGLTFModel('/Model/Monster/melee_minion_-_chaos.glb');
         const model = gltf.scene;
@@ -43,13 +41,12 @@ class MonsterManage {
         this.monsterAnimations = gltf.animations;
     };
 
-    // 添加怪物
     async addMonsters() {
         if (!this.monsterCache) {
             console.warn('怪物模型或动画未加载完成，无法添加怪物');
             return;
         }
-
+        const hero = this.heroManage.hero
         const monsterMesh = clone(this.monsterCache)
         monsterMesh.traverse((object) => {
             if (object.isMesh || object.isSkinnedMesh) {
@@ -58,22 +55,33 @@ class MonsterManage {
                 }
             }
         });
+        const minDistance = 5; // 怪物距离英雄的最小距离
+        const maxDistance = 15; // 怪物距离英雄的最大距离
+
+        const angle = Math.random() * Math.PI * 2; // 随机角度
+        const distance = minDistance + Math.random() * (maxDistance - minDistance); // 随机距离
+
+        // 获取英雄的世界位置
+        const heroWorldPos = new THREE.Vector3();
+        hero.getWorldPosition(heroWorldPos);
+
+        // 计算怪物位置
+        const newPosX = heroWorldPos.x + distance * Math.cos(angle);
+        const newPosZ = heroWorldPos.z + distance * Math.sin(angle);
+
         const randomPos = new THREE.Vector3(
-            (Math.random() - 0.5) * 20,
-            0,
-            (Math.random() - 0.5) * 20
+            newPosX,
+            0, // 假设地面 Y 坐标为 0
+            newPosZ
         );
         monsterMesh.position.copy(randomPos);
         monsterMesh.rotation.set(0, Math.random() * Math.PI * 2, 0);
 
         this.monsterGroup.add(monsterMesh);
 
-        const monsterAI = new MonsterAI(monsterMesh, this.scene);
+        const monsterAI = new MonsterAI(monsterMesh);
         monsterMesh.monsterAI = monsterAI
         this.monsterAIs.push(monsterAI);
-
-        const monsterAnimate = new MonsterAnimate(monsterMesh, this.monsterAnimations);
-        monsterAI.animate = monsterAnimate;
     }
 
     moveToHero(delta) {

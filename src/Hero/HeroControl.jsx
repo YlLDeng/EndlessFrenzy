@@ -17,14 +17,16 @@ class HeroControl extends HeroBasics {
         this.up = new THREE.Vector3(0, 1, 0);
         this.ease = new THREE.Vector3();
         this.key = [0, 0, 0];
+        this.updateFn = null
         this.init();
     }
 
     init() {
-        this.bindEvent();
-        useGameStore.getState().addLoop((delta) => {
+        this.updateFn = (delta) => {
             this.update(delta);
-        });
+        };
+        useGameStore.getState().addLoop(this.updateFn);
+        this.bindEvent();
     }
 
     update = (delta) => {
@@ -154,6 +156,10 @@ class HeroControl extends HeroBasics {
         const rotateStep = this.rotateSmoothness * delta * (angleDiff / Math.PI);
         this.model.quaternion.rotateTowards(targetRotation, rotateStep);
     };
+
+    dispose() {
+        this.updateFn = null
+    }
 }
 
 export default HeroControl;
