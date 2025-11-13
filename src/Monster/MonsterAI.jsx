@@ -12,8 +12,9 @@ class MonsterAI {
         this.collisionManager = this.getState().CollisionManager
         this.scene = this.getState().MonsterManage.scene;
 
+        this.pixelRatio = window.devicePixelRatio || 1;
         this.maxHealth = 10;
-        this.health = 10;
+        this.health = this.maxHealth;
         this.monster = monster;
 
         this.textGroup = new THREE.Group();
@@ -38,7 +39,7 @@ class MonsterAI {
         this.initCollision()
         this.animate = new MonsterAnimate(this.monster, this.getState().MonsterManage.monsterAnimations)
         this.control = new MonsterControl(this.monster)
-        this.healthBar = new HealthBar(this.monster, this.maxHealth)
+        this.healthBar = new HealthBar(this.monster, this.maxHealth, this.scene, 2.5)
     }
 
     update(delta) {
@@ -118,27 +119,38 @@ class MonsterAI {
     }
 
     createCanvasTexture(text) {
+
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        const fontSize = 12;
 
-        context.font = `${fontSize}px Arial`;
+        const logicFontSize = 8;
+        const padding = 20;
+
+        context.font = `${logicFontSize}px Arial`;
         const metrics = context.measureText(text);
-        const textWidth = metrics.width;
+        const logicTextWidth = metrics.width;
 
-        canvas.width = textWidth + 20;
-        canvas.height = fontSize + 20;
+        const logicWidth = logicTextWidth + padding;
+        const logicHeight = logicFontSize + padding;
 
-        context.font = `${fontSize}px Arial`;
+        canvas.width = logicWidth * this.pixelRatio;
+        canvas.height = logicHeight * this.pixelRatio;
+
+        canvas.style.width = `${logicWidth}px`;
+        canvas.style.height = `${logicHeight}px`;
+
+        context.scale(this.pixelRatio, this.pixelRatio);
+
+        context.font = `${logicFontSize}px Arial`;
 
         context.fillStyle = 'rgba(0, 0, 0, 0.0)';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillRect(0, 0, logicWidth, logicHeight);
 
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillStyle = '#FFFFFF';
 
-        context.fillText(text, canvas.width / 2, canvas.height / 2 + 5);
+        context.fillText(text, logicWidth / 2, logicHeight / 2 + 2); // 调整 +2 略微修正基线
 
         const texture = new THREE.CanvasTexture(canvas);
         texture.minFilter = THREE.LinearFilter;

@@ -55,24 +55,10 @@ class MonsterManage {
                 }
             }
         });
-        const minDistance = 5; // 怪物距离英雄的最小距离
-        const maxDistance = 15; // 怪物距离英雄的最大距离
-
-        const angle = Math.random() * Math.PI * 2; // 随机角度
-        const distance = minDistance + Math.random() * (maxDistance - minDistance); // 随机距离
-
-        // 获取英雄的世界位置
-        const heroWorldPos = new THREE.Vector3();
-        hero.getWorldPosition(heroWorldPos);
-
-        // 计算怪物位置
-        const newPosX = heroWorldPos.x + distance * Math.cos(angle);
-        const newPosZ = heroWorldPos.z + distance * Math.sin(angle);
-
         const randomPos = new THREE.Vector3(
-            newPosX,
-            0, // 假设地面 Y 坐标为 0
-            newPosZ
+            (Math.random() - 0.5) * 40,
+            0,
+            (Math.random() - 0.5) * 40
         );
         monsterMesh.position.copy(randomPos);
         monsterMesh.rotation.set(0, Math.random() * Math.PI * 2, 0);
@@ -82,16 +68,6 @@ class MonsterManage {
         const monsterAI = new MonsterAI(monsterMesh);
         monsterMesh.monsterAI = monsterAI
         this.monsterAIs.push(monsterAI);
-    }
-
-    moveToHero(delta) {
-        this.monsterAIs.forEach(ai => {
-            ai.update(delta)
-            if (ai.animate) {
-                ai.animate.update(delta);
-            }
-        }
-        );
     }
 
     removeMonster(monsterAI) {

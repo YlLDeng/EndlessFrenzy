@@ -4,6 +4,7 @@ import HeroControl from './HeroControl'
 import HeroAnimate from './HeroAnimate'
 import HeroAttack from './HeroAttack'
 import HeroBasics from './HeroBasics';
+import HealthBar from '../Base/HealthBar'
 
 class HeroManage extends HeroBasics {
     constructor(scene, followGroup, camera, heroName) {
@@ -19,6 +20,7 @@ class HeroManage extends HeroBasics {
         this.HeroControl = null
         this.animations = null
         this.hero = null
+        this.healthBar = null
 
         this.loadModel = useHeroModelDict.getState()[heroName]
         this.loadPromise = this.init();
@@ -33,6 +35,7 @@ class HeroManage extends HeroBasics {
         this.HeroAnimate = new HeroAnimate(this.hero, this.animations)
         this.HeroControl = new HeroControl(this.hero)
         this.HeroAttack = new HeroAttack(this.hero)
+        this.healthBar = new HealthBar(this.hero, this.state.health, this.scene, 3)
         this.initCollision()
     }
 
@@ -52,17 +55,17 @@ class HeroManage extends HeroBasics {
 
         if (otherObject.tag == 'monster') {
             this.state.health -= 1;
-            console.log(`Hero took damage. Health remaining: ${this.state.health}`);
             this.startInvulnerability();
         }
     }
+
     startInvulnerability() {
         this.isInvulnerable = true;
         setTimeout(() => {
             this.isInvulnerable = false;
-            console.log("Hero is no longer invulnerable.");
         }, this.INVULNERABILITY_DURATION * 1000); // 转换为毫秒
     }
+
     initModel = async () => {
         const gltf = await loadGLTFModel(this.loadModel);
         gltf.scene.scale.set(0.02, 0.02, 0.02)
@@ -81,10 +84,6 @@ class HeroManage extends HeroBasics {
         });
         this.animations = gltf.animations
     };
-
-    attack = () => {
-        this.HeroControl.attackTarget()
-    }
 
     dispose() {
         this.HeroAnimate.dispose()
