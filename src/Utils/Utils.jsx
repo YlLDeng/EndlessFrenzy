@@ -1,8 +1,17 @@
 // src/utils/util.jsx
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
-// 加载HDR环境贴图
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('jsm/libs/draco/');
+dracoLoader.setDecoderConfig({ type: 'js' });
+
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+
 export const loadHDRTexture = (path) => {
     return new Promise((resolve, reject) => {
         new HDRLoader()
@@ -16,7 +25,7 @@ export const loadHDRTexture = (path) => {
 // 加载GLTF模型
 export const loadGLTFModel = (url) => {
     return new Promise((resolve, reject) => {
-        new GLTFLoader().load(url, resolve, undefined, reject);
+        gltfLoader.load(url, resolve, undefined, reject);
     });
 };
 
@@ -27,24 +36,18 @@ export const updateMixer = (mixer, delta) => {
 
 export function createFixedCollisionBox(width, height, depth) {
     const geometry = new THREE.BoxGeometry(width, height, depth);
-
     const material = new THREE.MeshBasicMaterial({
         color: 0xff0000,
         transparent: true,
-        opacity: 1.0, // 完全不可见
-        depthTest: false, // 禁用深度测试
+        opacity: 0.0,
+        depthTest: false,
         wireframe: false,
     });
-
     const collisionMesh = new THREE.Mesh(geometry, material);
-
     collisionMesh.position.y = height / 2;
-
     collisionMesh.visible = false;
     collisionMesh.castShadow = false;
     collisionMesh.receiveShadow = false;
-
     collisionMesh.name = "CollisionBox";
-
     return collisionMesh;
 }

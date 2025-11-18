@@ -57,6 +57,7 @@ class HealthBar {
 
         this.healthBarGroup.add(this.healthBarMesh);
     }
+
     _createCanvasElements() {
         const canvas = document.createElement('canvas');
         const logicWidth = 256;
@@ -70,6 +71,7 @@ class HealthBar {
         const texture = new THREE.CanvasTexture(canvas);
         return { texture, canvas };
     }
+    
     _drawHealthBar(ratio) {
         const context = this.healthBarCanvas.getContext('2d');
         const canvasWidth = this.healthBarCanvas.width;

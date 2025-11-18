@@ -6,6 +6,10 @@ class HeroBasics {
         health: 5,
         damage: 1,
         attackSpeed: 3.0,
+        experience: 0,
+        buff: [],
+        debuff: [],
+        skill: []
     };
 
     constructor() {

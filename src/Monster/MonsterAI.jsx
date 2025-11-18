@@ -14,6 +14,7 @@ class MonsterAI {
 
         this.pixelRatio = window.devicePixelRatio || 1;
         this.maxHealth = 10;
+        this.deathExperience = 1;
         this.health = this.maxHealth;
         this.monster = monster;
 
@@ -114,8 +115,13 @@ class MonsterAI {
             }, duration * 0.25);
 
         if (this.health <= 0) {
-            this.getState().MonsterManage.removeMonster(this);
+            this.death()
         }
+    }
+
+    death() {
+        this.getState().MonsterManage.removeMonster(this);
+        this.dispose();
     }
 
     createCanvasTexture(text) {

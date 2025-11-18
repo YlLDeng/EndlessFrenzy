@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { useGameStore } from '../Store/StoreManage';
-
+import { updateMixer } from '../Utils/Utils'
 class MonsterAnimate {
     constructor(monsterMesh, animations) {
         this.setData = useGameStore.getState().setData;
@@ -59,9 +59,7 @@ class MonsterAnimate {
 
 
     update(delta) {
-        if (this.mixer) {
-            this.mixer.update(delta);
-        }
+        updateMixer(this.mixer, delta)
     }
 
     dispose() {
