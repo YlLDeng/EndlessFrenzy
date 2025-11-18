@@ -50,8 +50,6 @@ class ExperienceBall {
         const coreGeometry = new THREE.SphereGeometry(this.radius, 16, 16);
         const coreMaterial = new THREE.MeshBasicMaterial({
             color: 0x66ff66,
-            emissive: 0x66ff66,
-            emissiveIntensity: 0.5,
             transparent: true,
             opacity: 0.9,
         });

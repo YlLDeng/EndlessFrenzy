@@ -22,6 +22,9 @@ class ActionManage {
         setData('CollisionManager', new CollisionManager());
         setData('UIManage', new UIManage());
 
+        const _SkillManage = new SkillManage();
+        setData('SkillManage', _SkillManage);
+        await _SkillManage.loadPromise;
 
         const _HeroManage = new HeroManage(scene, followGroup, camera, useDefaultSetting.getState().defaultHero);
         setData('HeroManage', _HeroManage);
@@ -31,9 +34,7 @@ class ActionManage {
         setData('MonsterManage', _MonsterManage);
         await _MonsterManage.loadPromise;
 
-        const _SkillManage = new SkillManage();
-        setData('SkillManage', _SkillManage);
-        await _SkillManage.loadPromise;
+
     }
 }
 

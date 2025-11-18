@@ -39,8 +39,8 @@ class HeroManage extends HeroBasics {
         this.HeroAnimate = new HeroAnimate(this.hero, this.animations)
         this.HeroControl = new HeroControl(this.hero)
         this.HeroAttack = new HeroAttack(this.hero)
-        this.HeroExperience = new HeroExperience(this.hero)
-        this.healthBar = new HealthBar(this.hero, this.state.health, this.scene, 3)
+        this.HeroExperience = new HeroExperience(this.hero, this.scene)
+        this.healthBar = new HealthBar(this.hero, this.state.health, this.scene, 3.3)
         this.initCollision()
     }
 
@@ -103,8 +103,12 @@ class HeroManage extends HeroBasics {
     }
 
     addExperience(experience) {
-        this.state.experience += experience
-        console.log(this.state.experience)
+        this.HeroExperience.updateExperience(experience)
+    }
+
+    upLevel() {
+        this.state.level += 1
+        console.log(this.state.level)
     }
 
     dispose() {

@@ -2,15 +2,15 @@ class HeroBasics {
     static state = {
         currentState: 'Idle',
         isAlive: true,
-        level: 0,
+        level: 0,   //等级
         health: 5,
-        damage: 1,
-        attackSpeed: 3.0,
-        experience: 0,
-        experienceScope: 2,
+        damage: 1, //攻击力
+        attackSpeed: 3.0,//攻击速度
+        experience: 0, //当前经验
+        experienceScope: 2, //吸附范围
         buff: [],
         debuff: [],
-        skill: []
+        skill: ["NormalBullet"]
     };
 
     constructor() {
