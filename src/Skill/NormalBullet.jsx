@@ -72,7 +72,7 @@ class NormalBullet {
         const heroPos = new THREE.Vector3();
         this.hero.getWorldPosition(heroPos);
 
-        const heroForward = new THREE.Vector3(0, 2, 1);
+        const heroForward = new THREE.Vector3(0, 1.7, 2);
         heroForward.applyQuaternion(this.hero.quaternion);
         const startPos = heroPos.addScaledVector(heroForward, 1.0);
 

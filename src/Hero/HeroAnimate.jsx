@@ -24,7 +24,7 @@ class HeroAnimate extends HeroBasics {
             Attack: {
                 from: ['Idle', 'Run'],
                 clip: 'caitlyn_skin11_attackfast1.anm',
-                isSingle: true
+                isSingle: false
             }
         };
         this.lastState = null;
@@ -58,13 +58,9 @@ class HeroAnimate extends HeroBasics {
         this.state.currentState = 'Idle';
         this.lastState = 'Idle';
 
-        this.mixer.addEventListener('finished', (e) => {
+        this.mixer.addEventListener('loop', (e) => {
             const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
-
-            if (finishedActionName && this.AnimationStates[finishedActionName]?.isSingle) {
-
-                this.state.currentState = "Idle";
-
+            if (finishedActionName == 'Attack') {
                 const heroAttack = this.getState().HeroManage.HeroAttack;
                 if (heroAttack) {
                     heroAttack.isAttacking = false;

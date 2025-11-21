@@ -25,9 +25,7 @@ class MonsterManage {
         const gltf = await loadGLTFModel('/Model/Monster/melee_minion_-_chaos.glb');
         const model = gltf.scene;
         model.scale.set(0.01, 0.01, 0.01);
-
         this.collisionBoxMesh = createFixedCollisionBox(100, 120, 100);
-
         model.traverse((object) => {
             if (object.isMesh || object.isSkinnedMesh) {
                 object.castShadow = true;
@@ -42,13 +40,11 @@ class MonsterManage {
             }
         });
         model.add(this.collisionBoxMesh);
-
         this.monsterCache = model;
-
         this.monsterAnimations = gltf.animations;
     };
 
-    async addMonsters() {
+    async addMonsters(type) {
         if (!this.monsterCache) {
             console.warn('怪物模型或动画未加载完成，无法添加怪物');
             return;

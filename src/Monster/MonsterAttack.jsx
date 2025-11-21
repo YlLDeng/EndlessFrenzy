@@ -9,5 +9,10 @@ class MonsterAttack {
     init() {
 
     }
+
+    startAttack() {
+
+    }
+
 }
 export default MonsterAttack;

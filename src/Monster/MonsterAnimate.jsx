@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { useGameStore } from '../Store/StoreManage';
 import { updateMixer } from '../Utils/Utils'
+
 class MonsterAnimate {
     constructor(monsterMesh, animations) {
         this.setData = useGameStore.getState().setData;
@@ -11,7 +12,6 @@ class MonsterAnimate {
         this.actions = {};
         this.currentAction = null;
         this.updateFn = null;
-
         this.init();
     }
 

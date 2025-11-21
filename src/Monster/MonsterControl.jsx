@@ -1,4 +1,5 @@
 import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
+import MonsterAttack from './MonsterAttack'
 class MonsterControl {
     constructor(monster) {
         this.setData = useGameStore.getState().setData;
@@ -8,9 +9,10 @@ class MonsterControl {
         this.scene = this.getState().MonsterManage.scene;
 
         this.speed = 1 + Math.random() * 0.5;
-        this.stopDistance = 1.5;
+        this.stopDistance = 10;
         this.rotationSpeed = 0.1;
         this.updateFn = null;
+        this.monsterAttack = new MonsterAttack(this.monster)
 
         this.init()
     }
@@ -38,6 +40,9 @@ class MonsterControl {
 
         if (distance > this.stopDistance) {
             this.moveTowards(direction, delta);
+        }
+        if (distance <= this.stopDistance) {
+            this.monsterAttack.startAttack()
         }
     }
 

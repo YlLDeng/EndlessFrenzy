@@ -122,8 +122,6 @@ class HeroAttack extends HeroBasics {
     // 转向完成后执行攻击
     executeAttackAfterRotation() {
         if (this.state.currentState === 'Run' || !this.nearestMonster) return;
-
-        this.isAttacking = true;
         this.state.currentState = 'Attack';
 
         const heroAnimate = this.getState().HeroManage.HeroAnimate;
@@ -133,14 +131,12 @@ class HeroAttack extends HeroBasics {
             const currentAS = this.state.attackSpeed;
 
             const actualDuration = attackDuration / currentAS;
-
             const bulletHitPoint = 0.2;
 
             const delayMs = actualDuration * bulletHitPoint * 1000;
-
             if (this.bulletDelayTimer) clearTimeout(this.bulletDelayTimer);
-
             this.bulletDelayTimer = setTimeout(() => {
+                this.isAttacking = true;
                 this.createBullet();
             }, delayMs);
         }

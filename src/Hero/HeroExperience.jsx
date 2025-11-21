@@ -59,11 +59,8 @@ class HeroExperience extends HeroBasics {
         });
 
         const mesh = new THREE.Mesh(geometry, material);
-
         mesh.position.y = 25;
-
         this.experienceScopeMesh = mesh;
-
         this.followGroup.add(this.experienceScopeMesh);
     }
 

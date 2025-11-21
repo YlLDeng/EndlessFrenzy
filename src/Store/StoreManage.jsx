@@ -1,6 +1,56 @@
 import { create } from 'zustand';
 import * as THREE from 'three';
 
+// 怪物字典
+export const monsterAnimateDict = {
+    "normalMonster": {
+        stopDistance: 1,
+        damage: 2,
+        deathExperience: 2,
+        maxHealth: 10,
+        AnimationStates: {
+            Run: {
+                from: ['Attack'],
+                clip: 'Run'
+            },
+            Attack: {
+                from: ['Run'],
+                clip: 'Attack2',
+                isSingle: true
+            },
+            Death: {
+                from: ['Attack', 'Run'],
+                clip: 'Death_Caster',
+                isSingle: true
+            }
+        },
+        modelPath: "'/Model/Monster/melee_minion_-_chaos.glb'"
+    },
+    "mageMonster": {
+        stopDistance: 10,
+        damage: 1,
+        deathExperience: 1,
+        maxHealth: 5,
+        AnimationStates: {
+            Run: {
+                from: ['Attack'],
+                clip: 'Run'
+            },
+            Attack: {
+                from: ['Run'],
+                clip: 'Attack2',
+                isSingle: true
+            },
+            Death: {
+                from: ['Attack', 'Run'],
+                clip: 'Death_Caster',
+                isSingle: true
+            }
+        },
+        modelPath: "'/Model/Monster/melee_minion_-_chaos.glb'"
+    }
+}
+
 // 子弹模型加载路径字典
 export const useBulletModelDict = create((set) => ({
     'normalBullet': '/Model/Bullet/bullet.glb'
