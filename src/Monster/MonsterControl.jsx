@@ -1,18 +1,18 @@
-import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
-import MonsterAttack from './MonsterAttack'
+import { useGameStore, monsterDict } from '../Store/StoreManage';
 class MonsterControl {
-    constructor(monster) {
+    constructor(MonsterAI) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
         this.heroManage = this.getState().HeroManage
-        this.monster = monster;
+        this.MonsterAI = MonsterAI
+        this.monster = MonsterAI.monster;
+
         this.scene = this.getState().MonsterManage.scene;
 
         this.speed = 1 + Math.random() * 0.5;
-        this.stopDistance = 10;
+        this.stopDistance = monsterDict[this.monster.monsterType].stopDistance || 1;
         this.rotationSpeed = 0.1;
         this.updateFn = null;
-        this.monsterAttack = new MonsterAttack(this.monster)
 
         this.init()
     }
@@ -24,7 +24,7 @@ class MonsterControl {
     }
 
     update(delta) {
-        if (!this.heroManage?.hero || !this.monster) return;
+        if (!this.heroManage?.hero || !this.monster || !this.MonsterAI.isAlive) return;
 
         const monsterPos = new THREE.Vector3();
         const heroPos = new THREE.Vector3();
@@ -38,11 +38,14 @@ class MonsterControl {
         const distance = monsterPos.distanceTo(heroPos);
         this.lookAtHero(direction);
 
-        if (distance > this.stopDistance) {
+        if (distance > this.stopDistance && this.MonsterAI) {
             this.moveTowards(direction, delta);
+            this.MonsterAI?.attack.stopAttackLoop()
+            this.MonsterAI?.animate.switchState("Run")
         }
-        if (distance <= this.stopDistance) {
-            this.monsterAttack.startAttack()
+        if (distance <= this.stopDistance && this.MonsterAI) {
+            this.MonsterAI?.animate.switchState("Attack")
+            this.MonsterAI?.attack.startAttackLoop()
         }
     }
 

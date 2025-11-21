@@ -3,10 +3,10 @@ import { useGameStore } from '../Store/StoreManage';
 import { gsap } from 'gsap';
 
 class HealthBar {
-    constructor(targetMesh, maxHealth, scene, offset) {
+    constructor(targetMesh, maxHealth, offset) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
-        this.scene = scene
+        this.scene = this.getState().scene;
         this.targetMesh = targetMesh;
         this.renderRatio = 1.0;
         this.pixelRatio = window.devicePixelRatio || 1;
@@ -71,7 +71,7 @@ class HealthBar {
         const texture = new THREE.CanvasTexture(canvas);
         return { texture, canvas };
     }
-    
+
     _drawHealthBar(ratio) {
         const context = this.healthBarCanvas.getContext('2d');
         const canvasWidth = this.healthBarCanvas.width;

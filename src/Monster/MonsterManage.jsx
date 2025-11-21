@@ -1,5 +1,5 @@
 import { loadGLTFModel, createFixedCollisionBox } from '../Utils/Utils';
-import { useGameStore } from '../Store/StoreManage';
+import { useGameStore, monsterDict } from '../Store/StoreManage';
 import MonsterAI from './MonsterAI'
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 class MonsterManage {
@@ -10,9 +10,10 @@ class MonsterManage {
         this.scene = scene
         this.monsterGroup = new THREE.Group()
         this.monsterAIs = [];
-        this.monsterCache = null;
-        this.monsterAnimations = null;
-        this.collisionBoxMesh = null
+
+        this.monsterAnimations = {};
+        this.monsterCache = {};
+        this.collisionBoxMesh = {}
         this.loadPromise = this.init();
     }
 
@@ -22,35 +23,54 @@ class MonsterManage {
     }
 
     loadMonsterModel = async () => {
-        const gltf = await loadGLTFModel('/Model/Monster/melee_minion_-_chaos.glb');
-        const model = gltf.scene;
-        model.scale.set(0.01, 0.01, 0.01);
-        this.collisionBoxMesh = createFixedCollisionBox(100, 120, 100);
-        model.traverse((object) => {
-            if (object.isMesh || object.isSkinnedMesh) {
-                object.castShadow = true;
-                object.receiveShadow = true;
-                object.material = object.material.clone();
-                object.material.metalness = 1.0;
-                object.material.roughness = 0.2;
-                object.material.color.set(1, 1, 1);
-                if (object.material.map) {
-                    object.material.metalnessMap = object.material.map;
-                }
-            }
-        });
-        model.add(this.collisionBoxMesh);
-        this.monsterCache = model;
-        this.monsterAnimations = gltf.animations;
+        const monsterNames = Object.keys(monsterDict);
+        for (const name of monsterNames) {
+            await this.loadSingleMonster(name);
+        }
     };
 
+    loadSingleMonster = async (name) => {
+        const config = monsterDict[name];
+
+        const gltf = await loadGLTFModel(config.modelPath);
+        const model = gltf.scene;
+
+        this.processMonsterModel(model);
+        this.attachCollisionBox(model, name);
+
+        this.monsterCache[name] = model;
+        this.monsterAnimations[name] = gltf.animations;
+    };
+
+    processMonsterModel(model) {
+        model.scale.set(0.01, 0.01, 0.01);
+        model.traverse((obj) => {
+            if (obj.isMesh || obj.isSkinnedMesh) {
+
+                const mat = obj.material = obj.material.clone();
+                obj.castShadow = true;
+                obj.receiveShadow = true;
+
+                mat.metalness = 1.0;
+                mat.roughness = 0.2;
+                mat.color.set(1, 1, 1);
+                if (mat.map) mat.metalnessMap = mat.map;
+            }
+        });
+    }
+
+    attachCollisionBox(model, name) {
+        const box = createFixedCollisionBox(100, 120, 100);
+        this.collisionBoxMesh[name] = box;
+        model.add(box);
+    }
+
     async addMonsters(type) {
-        if (!this.monsterCache) {
+        if (!this.monsterCache[type]) {
             console.warn('怪物模型或动画未加载完成，无法添加怪物');
             return;
         }
-        const hero = this.heroManage.hero
-        const monsterMesh = clone(this.monsterCache)
+        const monsterMesh = clone(this.monsterCache[type])
         monsterMesh.traverse((object) => {
             if (object.isMesh || object.isSkinnedMesh) {
                 if (object.geometry) {
@@ -65,10 +85,10 @@ class MonsterManage {
         );
         monsterMesh.position.copy(randomPos);
         monsterMesh.rotation.set(0, Math.random() * Math.PI * 2, 0);
-
+        monsterMesh.monsterType = type
         this.monsterGroup.add(monsterMesh);
 
-        const monsterAI = new MonsterAI(monsterMesh);
+        const monsterAI = new MonsterAI(monsterMesh, this.monsterAnimations[type], type);
         monsterMesh.monsterAI = monsterAI
         this.monsterAIs.push(monsterAI);
     }
@@ -80,13 +100,16 @@ class MonsterManage {
         if (monsterAI.lifetimeTimer) {
             clearTimeout(monsterAI.lifetimeTimer);
         }
-        if (monsterAI.dispose) {
-            monsterAI.dispose();
-        }
+
         if (monsterAI.animate) {
             monsterAI.animate.dispose();
             monsterAI.animate = null;
         }
+
+        if (monsterAI.dispose) {
+            monsterAI.dispose();
+        }
+
         this.monsterGroup.remove(monster);
         monster.removeFromParent();
 

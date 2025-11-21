@@ -1,35 +1,45 @@
-import { useGameStore } from '../Store/StoreManage';
+import { useGameStore, monsterDict } from '../Store/StoreManage';
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 import MonsterAnimate from './MonsterAnimate'
 import MonsterControl from './MonsterControl'
-import HealthBar from '../Base/HealthBar'
+import MonsterAttack from './MonsterAttack'
 import ExperienceBall from '../Base/ExperienceBall'
+import HealthBar from '../Base/HealthBar'
 
 class MonsterAI {
-    constructor(monster) {
+    constructor(monster, animate, type) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
         this.heroManage = this.getState().HeroManage
         this.collisionManager = this.getState().CollisionManager
         this.scene = this.getState().scene;
+        this.monster = monster;
+        this.monsterAnimate = animate
 
         this.pixelRatio = window.devicePixelRatio || 1;
-        this.maxHealth = 2;
-        this.deathExperience = 1;
+        this.maxHealth = monsterDict[this.monster.monsterType].maxHealth || 5;
+        this.deathExperience = monsterDict[this.monster.monsterType].deathExperience || 1;
+        this.attackSpeed = monsterDict[this.monster.monsterType].attackSpeed || 1.0
+        this.attackAnimateTime = monsterDict[this.monster.monsterType].attackAnimateTime || 0.2
+        this.damage = monsterDict[this.monster.monsterType].damage || 1
+
         this.health = this.maxHealth;
-        this.monster = monster;
 
         this.textGroup = new THREE.Group();
         this.scene.add(this.textGroup)
 
-        this.id = THREE.MathUtils.generateUUID(); // 生成唯一 ID
+        this.id = THREE.MathUtils.generateUUID();
         this.tag = 'monster';
+        this.currentState = 'Run'
+        this.monsterType = type
 
         this.animate = null
         this.control = null
-        this.updateFn = null
         this.healthBar = null
+        this.attack = null
+        this.isAlive = true
+        this.updateFn = null
         this.textOffset = 3
         this.init()
     }
@@ -40,9 +50,10 @@ class MonsterAI {
         };
         useGameStore.getState().addLoop(this.updateFn);
         this.initCollision()
-        this.animate = new MonsterAnimate(this.monster, this.getState().MonsterManage.monsterAnimations)
-        this.control = new MonsterControl(this.monster)
-        this.healthBar = new HealthBar(this.monster, this.maxHealth, this.scene, 2.5)
+        this.animate = new MonsterAnimate(this)
+        this.control = new MonsterControl(this)
+        this.attack = new MonsterAttack(this)
+        this.healthBar = new HealthBar(this.monster, this.maxHealth, 2.5)
     }
 
     update(delta) {
@@ -62,9 +73,8 @@ class MonsterAI {
     }
 
     handleCollision(otherObject) {
-        if (otherObject.tag === 'bullet') {
-            const damage = this.getState().HeroManage.state.damage
-            this.onHit(damage);
+        if (otherObject.tag === 'bullet' && otherObject.mesh.from === 'hero') {
+            this.onHit(otherObject.mesh.damage);
         }
     }
 
@@ -73,47 +83,47 @@ class MonsterAI {
         this.healthBar.updateHealth(this.health)
         this.health = Math.max(0, this.health);
 
-        const text = String(damage);
-        const texture = this.createCanvasTexture(text);
+        // const text = String(damage);
+        // const texture = this.createCanvasTexture(text);
 
-        const material = new THREE.SpriteMaterial({
-            map: texture,
-            transparent: true,
-            opacity: 1,
-            depthTest: false,
-            depthWrite: false,
-        });
+        // const material = new THREE.SpriteMaterial({
+        //     map: texture,
+        //     transparent: true,
+        //     opacity: 1,
+        //     depthTest: false,
+        //     depthWrite: false,
+        // });
 
-        const sprite = new THREE.Sprite(material);
+        // const sprite = new THREE.Sprite(material);
 
-        const aspect = texture.image.width / texture.image.height;
-        const spriteHeight = 1.5;
-        sprite.scale.set(spriteHeight * aspect, spriteHeight, 1);
+        // const aspect = texture.image.width / texture.image.height;
+        // const spriteHeight = 1.5;
+        // sprite.scale.set(spriteHeight * aspect, spriteHeight, 1);
 
-        sprite.position.set(0, 0, 0);
+        // sprite.position.set(0, 0, 0);
 
-        this.textGroup.add(sprite);
+        // this.textGroup.add(sprite);
 
-        const duration = 1.5;
-        const travelHeight = 2;
+        // const duration = 1.5;
+        // const travelHeight = 2;
 
-        gsap.timeline({
-            onComplete: () => {
-                this.textGroup.remove(sprite);
-                material.dispose();
-                texture.dispose();
-            }
-        })
-            .to(sprite.position, {
-                duration: duration,
-                y: `+=${travelHeight}`,
-                ease: "power2.out"
-            }, 0)
+        // gsap.timeline({
+        //     onComplete: () => {
+        //         this.textGroup.remove(sprite);
+        //         material.dispose();
+        //         texture.dispose();
+        //     }
+        // })
+        //     .to(sprite.position, {
+        //         duration: duration,
+        //         y: `+=${travelHeight}`,
+        //         ease: "power2.out"
+        //     }, 0)
 
-            .to(material, {
-                duration: duration * 0.75,
-                opacity: 0
-            }, duration * 0.25);
+        //     .to(material, {
+        //         duration: duration * 0.75,
+        //         opacity: 0
+        //     }, duration * 0.25);
 
         if (this.health <= 0) {
             this.death()
@@ -121,9 +131,14 @@ class MonsterAI {
     }
 
     death() {
+        this.isAlive = false
+        this.attack.stopAttackLoop()
+        this.animate.switchState("Death")
+        this.collisionManager.unregister(this.id);
         new ExperienceBall(this.deathExperience, this.monster.position)
-        this.getState().MonsterManage.removeMonster(this);
-        this.dispose();
+        setTimeout(() => {
+            this.getState().MonsterManage.removeMonster(this);
+        }, 1000)
     }
 
     createCanvasTexture(text) {

@@ -1,17 +1,15 @@
 import { useGameStore } from '../Store/StoreManage';
 import * as THREE from 'three';
 
-class NormalBullet {
-    constructor(target, self, bulletMesh, from, damage) {
+class MagicProjectile {
+    constructor(target, self, model, from, damage) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
         this.collisionManager = this.getState().CollisionManager;
         this.self = self
         this.damage = damage
-
-        this.MODEL_SCALE = 0.3;
         this.target = target;
-        this.bulletModel = bulletMesh;
+        this.bulletModel = null;
 
         this.speed = 7;
         this.isFlying = false;
@@ -22,7 +20,6 @@ class NormalBullet {
         this.id = THREE.MathUtils.generateUUID();
         this.tag = 'bullet';
         this.updateFn = null;
-
         this.init();
     }
 
@@ -35,20 +32,56 @@ class NormalBullet {
     }
 
     initModel() {
-        this.bulletModel.traverse((child) => {
-            if (child.isMesh) {
-                if (Array.isArray(child.material)) {
-                    child.material = child.material.map(m => m.clone());
-                } else {
-                    child.material = child.material.clone();
-                }
-                child.castShadow = true;
-            }
+        const geometry = new THREE.SphereGeometry(0.12, 32, 32);
+        const material = new THREE.ShaderMaterial({
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            uniforms: {
+                uTime: { value: 0 },
+                uColor: { value: new THREE.Color(1.0, 0.2, 0.2) },
+            },
+            vertexShader: `
+                        varying vec2 vUv;
+                        varying vec3 vPos;
+                        void main() {
+                            vUv = uv;
+                            vPos = position;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+            fragmentShader: `
+                        uniform float uTime;
+                        uniform vec3 uColor;
+        
+                        varying vec2 vUv;
+                        varying vec3 vPos;
+        
+                        float noise(vec3 p){
+                            return fract(sin(dot(p ,vec3(12.9898,78.233, 37.719))) * 43758.5453);
+                        }
+        
+                        void main(){
+                            float core = 1.0 - length(vPos) * 1.6;
+        
+                            float pulse = noise(vPos * 4.0 + uTime * 6.0);
+                            float glow = smoothstep(0.2, 1.0, core + pulse * 0.3);
+        
+                            vec3 color = uColor * glow * 2.0;
+        
+                            float alpha = glow;
+                            if(alpha < 0.05) discard;
+        
+                            gl_FragColor = vec4(color, alpha);
+                        }
+                    `
         });
-        this.bulletModel.scale.set(this.MODEL_SCALE, this.MODEL_SCALE, this.MODEL_SCALE);
+
+        this.bulletModel = new THREE.Mesh(geometry, material);
         this.bulletModel.visible = false;
         this.bulletModel.from = this.from
         this.bulletModel.damage = this.damage
+        this.scene.add(this.bulletModel);
     }
 
     create() {
@@ -141,4 +174,4 @@ class NormalBullet {
     }
 }
 
-export default NormalBullet;
+export default MagicProjectile;

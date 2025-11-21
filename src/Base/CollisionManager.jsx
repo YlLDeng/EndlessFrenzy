@@ -57,12 +57,12 @@ class CollisionManager {
                 const box2 = this.collidableBoxes.get(obj2.id);
                 if (!box2) continue;
 
-                // if (this.shouldHandleCollision(obj1.tag, obj2.tag)) {
-                if (box1.intersectsBox(box2)) {
-                    obj1.onCollision(obj2);
-                    obj2.onCollision(obj1);
+                if (this.shouldHandleCollision(obj1.tag, obj2.tag)) {
+                    if (box1.intersectsBox(box2)) {
+                        obj1.onCollision(obj2);
+                        obj2.onCollision(obj1);
+                    }
                 }
-                // }
             }
         }
     }
@@ -75,6 +75,13 @@ class CollisionManager {
         }
 
         if ((tag1 === 'hero' && tag2 === 'monster') || (tag1 === 'monster' && tag2 === 'hero')) {
+            return true;
+        }
+
+        if ((tag1 === 'hero' && tag2 === 'bullet') || (tag1 === 'bullet' && tag2 === 'hero')) {
+            return true;
+        }
+        if ((tag1 === 'hero' && tag2 === 'experience_ball') || (tag1 === 'experience_ball' && tag2 === 'hero')) {
             return true;
         }
 

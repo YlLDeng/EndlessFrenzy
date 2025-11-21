@@ -42,6 +42,8 @@ class HeroAttack extends HeroBasics {
 
         const monsters = this.getState().MonsterManage.monsterGroup.children;
         if (monsters.length === 0) {
+            this.interruptAttack()
+            this.state.currentState === 'Idle'
             return;
         }
 
@@ -93,10 +95,12 @@ class HeroAttack extends HeroBasics {
         let nearestMonster = null;
         let minDist = Infinity;
         monsterArr.forEach(monster => {
-            const dist = heroPos.distanceTo(monster.position);
-            if (dist < minDist) {
-                minDist = dist;
-                nearestMonster = monster;
+            if (monster.monsterAI.isAlive) {
+                const dist = heroPos.distanceTo(monster.position);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearestMonster = monster;
+                }
             }
         });
         return nearestMonster;
@@ -131,7 +135,7 @@ class HeroAttack extends HeroBasics {
             const currentAS = this.state.attackSpeed;
 
             const actualDuration = attackDuration / currentAS;
-            const bulletHitPoint = 0.2;
+            const bulletHitPoint = 0.07;
 
             const delayMs = actualDuration * bulletHitPoint * 1000;
             if (this.bulletDelayTimer) clearTimeout(this.bulletDelayTimer);
@@ -143,11 +147,14 @@ class HeroAttack extends HeroBasics {
     }
 
     createBullet = () => {
-        if (!this.nearestMonster) return;
+        if (!this.nearestMonster || !this.nearestMonster.monsterAI.isAlive) return;
         const { SkillManage } = this.getState()
         SkillManage.createBullet(
             this.nearestMonster,
-            "normalBullet"
+            this.model,
+            "NormalBullet",
+            'hero',
+            this.state.damage
         );
     }
 

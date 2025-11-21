@@ -40,7 +40,7 @@ class HeroManage extends HeroBasics {
         this.HeroControl = new HeroControl(this.hero)
         this.HeroAttack = new HeroAttack(this.hero)
         this.HeroExperience = new HeroExperience(this.hero, this.scene)
-        this.healthBar = new HealthBar(this.hero, this.state.health, this.scene, 3.3)
+        this.healthBar = new HealthBar(this.hero, this.state.health, 3.3)
         this.initCollision()
     }
 
@@ -56,6 +56,12 @@ class HeroManage extends HeroBasics {
     handleCollision(otherObject) {
         if (this.isInvulnerable) {
             return;
+        }
+
+        if (otherObject.tag == 'bullet' && otherObject.mesh.from == 'monster') {
+            this.state.health -= otherObject.mesh.damage;
+            this.healthBar.updateHealth(this.state.health)
+            this.startInvulnerability();
         }
 
         if (otherObject.tag == 'monster') {
