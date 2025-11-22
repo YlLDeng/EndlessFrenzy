@@ -123,6 +123,14 @@ class MonsterManage {
         monsterAI = null;
     }
 
+    handelHeroDeath() {
+        this.monsterAIs.forEach(AI => {
+            AI.stopUpdate = true
+            AI.attack.stopAttackLoop()
+            AI.animate.switchState("Win")
+        })
+    }
+
     dispose(monster) {
         monster.traverse(child => {
             if (child.isMesh || child.isSkinnedMesh) {

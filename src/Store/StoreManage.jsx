@@ -20,9 +20,17 @@ export const monsterDict = {
                 clip: 'Attack2',
                 isSingle: true
             },
+            Win: {
+                from: ['Attack', 'Run'],
+                clip: 'Win1'
+            },
+            Idle: {
+                from: ['Attack', 'Run'],
+                clip: 'Idle1'
+            },
             Death: {
                 from: ['Attack', 'Run'],
-                clip: 'Death_Caster',
+                clip: 'minion_melee_death3.anm',
                 isSingle: true
             }
         },
@@ -45,9 +53,17 @@ export const monsterDict = {
                 clip: 'Attack2',
                 isSingle: true
             },
+            Win: {
+                from: ['Attack', 'Run'],
+                clip: 'Win1'
+            },
+            Idle: {
+                from: ['Attack', 'Run'],
+                clip: 'Idle1'
+            },
             Death: {
                 from: ['Attack', 'Run'],
-                clip: 'Death_Caster',
+                clip: 'minion_caster_chaos_death.anm',
                 isSingle: true
             }
         },

@@ -40,6 +40,7 @@ class MonsterAI {
         this.attack = null
         this.isAlive = true
         this.updateFn = null
+        this.stopUpdate = false
         this.textOffset = 3
         this.init()
     }
@@ -57,7 +58,7 @@ class MonsterAI {
     }
 
     update(delta) {
-        if (!this.monster) return;
+        if (!this.monster || this.stopUpdate) return;
         const monsterPos = new THREE.Vector3();
         this.monster.getWorldPosition(monsterPos);
         this.textGroup.position.copy(monsterPos).add(new THREE.Vector3(0, this.textOffset, 0));

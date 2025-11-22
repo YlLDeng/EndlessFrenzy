@@ -2,6 +2,7 @@ import { updateMixer } from '../Utils/Utils';
 import { useGameStore } from '../Store/StoreManage';
 import HeroBasics from './HeroBasics';
 import * as THREE from 'three';
+import { gsap } from 'gsap';
 
 class HeroAnimate extends HeroBasics {
     constructor(hero, animations) {
@@ -25,10 +26,16 @@ class HeroAnimate extends HeroBasics {
                 from: ['Idle', 'Run'],
                 clip: 'caitlyn_skin11_attackfast1.anm',
                 isSingle: false
+            },
+            Death: {
+                from: ['Attack', 'Idle', 'Run'],
+                clip: 'Death_Base',
+                isSingle: true
             }
         };
         this.lastState = null;
         this.fadeing = false;
+        this.playingDeathAnima = false
         this.init();
     }
 
@@ -58,6 +65,13 @@ class HeroAnimate extends HeroBasics {
         this.state.currentState = 'Idle';
         this.lastState = 'Idle';
 
+        this.mixer.addEventListener('finished', (e) => {
+            const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
+            if (finishedActionName == 'Death') {
+
+            }
+        });
+
         this.mixer.addEventListener('loop', (e) => {
             const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
             if (finishedActionName == 'Attack') {
@@ -72,6 +86,9 @@ class HeroAnimate extends HeroBasics {
     update = (delta) => {
         this.switchState(this.state.currentState);
         updateMixer(this.mixer, delta);
+        if (!this.state.isAlive) {
+            this.deathAnimate()
+        }
     };
 
     switchState(targetState, fadeDuration = 0.2) {
@@ -112,6 +129,20 @@ class HeroAnimate extends HeroBasics {
             .play();
 
         this.lastState = targetState;
+    }
+
+    deathAnimate() {
+        if (this.playingDeathAnima) return;
+        this.playingDeathAnima = true;
+        const duration = 2.5;
+        gsap.to(this.hero.position, {
+            y: this.hero.position.y - 2,
+            duration,
+            ease: "power2.out",
+        });
+        setTimeout(() => {
+            this.hero.visible = false
+        }, 1000)
     }
 }
 

@@ -38,7 +38,8 @@ class HeroAttack extends HeroBasics {
     }
 
     tryInitiateAttack() {
-        if (this.state.currentState === 'Run' || this.isRotatingToTarget || this.isAttacking) return;
+
+        if (!this.state.isAlive || this.state.currentState === 'Run' || this.isRotatingToTarget || this.isAttacking) return;
 
         const monsters = this.getState().MonsterManage.monsterGroup.children;
         if (monsters.length === 0) {

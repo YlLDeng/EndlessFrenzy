@@ -42,14 +42,9 @@ class MonsterAnimate {
         this.lastState = 'Run';
 
         this.mixer.addEventListener('loop', (e) => {
-            const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
-            if (finishedActionName == 'Attack') {
-                // this.monsterAI.attack.
-                // const heroAttack = this.getState().HeroManage.HeroAttack;
-                // if (heroAttack) {
-                //     heroAttack.isAttacking = false;
-                // }
-            }
+            // const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
+            // if (finishedActionName == 'Attack') {
+            // }
         });
         this.switchState("Run");
     };
@@ -59,10 +54,10 @@ class MonsterAnimate {
     };
 
     switchState(targetState, fadeDuration = 0.2) {
+
         if (!this.AnimationStates[targetState]) {
             targetState = 'Run';
         }
-
         const currentState = this.lastState;
 
         if (currentState === targetState) {

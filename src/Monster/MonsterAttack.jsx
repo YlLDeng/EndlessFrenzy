@@ -33,7 +33,7 @@ class MonsterAttack {
     }
 
     startAttack() {
-        if (!this.autoAttack) return
+        if (!this.autoAttack ) return
         this.elapsed = 0;
         this.origin = this.monster.position.clone();
         this.target = this.heroManage.hero.position.clone();

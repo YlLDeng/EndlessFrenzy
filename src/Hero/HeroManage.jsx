@@ -66,9 +66,19 @@ class HeroManage extends HeroBasics {
 
         if (otherObject.tag == 'monster') {
             this.state.health -= 1;
+            if (this.state.health <= 0) {
+                this.death()
+            }
             this.healthBar.updateHealth(this.state.health)
             this.startInvulnerability();
         }
+    }
+
+    death() {
+        this.state.currentState = 'Death'
+        this.state.isAlive = false
+        this.getState().MonsterManage.handelHeroDeath()
+        this.HeroExperience.hiddenBar()
     }
 
     startInvulnerability() {

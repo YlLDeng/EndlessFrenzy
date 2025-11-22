@@ -29,10 +29,13 @@ class HeroControl extends HeroBasics {
     }
 
     update = (delta) => {
-        this.move(delta);
+        if (this.state.isAlive) {
+            this.move(delta);
+        }
     };
 
     handleKeyDown = (event) => {
+        if (!this.state.isAlive) return
         const heroAttack = this.getState().HeroManage.HeroAttack;
         heroAttack?.interruptAttack();
 
@@ -56,6 +59,7 @@ class HeroControl extends HeroBasics {
     };
 
     handleKeyUp = (event) => {
+        if (!this.state.isAlive) return
         const key = this.key;
         switch (event.code) {
             case 'ArrowUp': case 'KeyW':

@@ -178,6 +178,10 @@ class HeroExperience extends HeroBasics {
         this.experienceBarGroup.lookAt(camera.position);
     }
 
+    hiddenBar() {
+        this.experienceBarGroup.visible = false
+    }
+
     dispose() {
         if (this.collisionManager && this.experienceScopeMesh) {
             this.collisionManager.unregister(this.id);

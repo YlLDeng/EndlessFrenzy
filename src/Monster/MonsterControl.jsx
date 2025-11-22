@@ -38,12 +38,12 @@ class MonsterControl {
         const distance = monsterPos.distanceTo(heroPos);
         this.lookAtHero(direction);
 
-        if (distance > this.stopDistance && this.MonsterAI) {
+        if (distance > this.stopDistance && this.MonsterAI && this.getState().HeroManage.state.isAlive) {
             this.moveTowards(direction, delta);
             this.MonsterAI?.attack.stopAttackLoop()
             this.MonsterAI?.animate.switchState("Run")
         }
-        if (distance <= this.stopDistance && this.MonsterAI) {
+        if (distance <= this.stopDistance && this.MonsterAI && this.getState().HeroManage.state.isAlive) {
             this.MonsterAI?.animate.switchState("Attack")
             this.MonsterAI?.attack.startAttackLoop()
         }
