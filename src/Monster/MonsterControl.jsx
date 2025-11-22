@@ -25,7 +25,6 @@ class MonsterControl {
 
     update(delta) {
         if (!this.heroManage?.hero || !this.monster || !this.monsterAI.isAlive || !this.getState().HeroManage.state.isAlive || !this.monsterAI) return;
-
         const monsterPos = new THREE.Vector3();
         const heroPos = new THREE.Vector3();
         this.monster.getWorldPosition(monsterPos);
@@ -40,13 +39,13 @@ class MonsterControl {
 
         if (distance > this.stopDistance) {
             this.moveTowards(direction, delta);
-            this.monsterAI?.attack.stopAttackLoop()
+            this.monsterAI?.attack.stopAutoAttack()
             this.monsterAI.currentState = 'Run'
 
         }
         if (distance <= this.stopDistance) {
             this.monsterAI.currentState = 'Attack'
-            this.monsterAI?.attack.startAttackLoop()
+            this.monsterAI?.attack.startAutoAttack()
         }
     }
 

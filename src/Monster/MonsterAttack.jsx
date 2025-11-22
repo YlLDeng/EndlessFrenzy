@@ -1,90 +1,121 @@
 import * as THREE from "three";
-import { useGameStore } from '../Store/StoreManage';
+import { useGameStore } from "../Store/StoreManage";
 
 class MonsterAttack {
     constructor(monsterAI) {
-        this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
         this.heroManage = this.getState().HeroManage;
-        this.scene = this.getState().scene;
 
         this.monsterAI = monsterAI;
-        this.monster = monsterAI.monster;
+        this.attackSpeed = monsterAI.attackSpeed;              // 攻击速度 默认1.0
+        this.attackAnimateTime = monsterAI.attackAnimateTime;  // 在动画的什么时候触发攻击
 
-        this.attackTimer = null
         this.updateFn = null;
+        this.isAttacking = false;
 
-        this.speed = 5;
-        this.maxDistance = 40;
-        this.elapsed = 0;
-        this.autoAttack = false
+        // 攻击状态管理
+        this.attackCooldown = 1 / this.attackSpeed;  // 攻击间隔(秒)
+        this.cooldownTimer = 0;                       // 冷却计时器
+        this.hasTriggeredAttack = false;              // 本次动画是否已触发伤害
+
         this.init();
     }
 
     init() {
-        this.setAttackTimer()
+        this.updateFn = this.update.bind(this);
+        useGameStore.getState().addLoop(this.updateFn);
     }
 
-    setAttackTimer() {
-        const intervalMs = (1 / this.monsterAI.attackSpeed) * 1000;
-        const minIntervalMs = 50;
-        const finalIntervalMs = Math.max(intervalMs, minIntervalMs);
-        this.attackTimer = setInterval(() => this.startAttack(), finalIntervalMs);
+    startAutoAttack() {
+        this.isAttacking = true;
+        this.cooldownTimer = 0; // 立即可以攻击
     }
 
-    startAttack() {
-        if (!this.autoAttack) return
-        this.elapsed = 0;
-        this.origin = this.monster.position.clone();
-        this.target = this.heroManage.hero.position.clone();
-        this.direction = new THREE.Vector3()
-            .subVectors(this.target, this.origin)
-            .normalize();
-
-        const attackAction = this.monsterAI.animate.actions.Attack;
-        const attackDuration = attackAction.getClip().duration;
-        const currentAS = this.monsterAI.attackSpeed;
-        const actualDuration = attackDuration / currentAS;
-
-        const delayMs = actualDuration * this.monsterAI.attackAnimateTime * 1000;
-        setTimeout(() => {
-            this.attack()
-        }, delayMs);
+    stopAutoAttack() {
+        this.isAttacking = false;
+        this.stopAttackAnimation();
     }
 
-    attack() {
-        if (!this.getState().HeroManage.state.isAlive) {
-            this.monsterAI.currentState = 'Win'
-            return
+    update(delta) {
+        if (!this.isAttacking || !this.heroManage.state.isAlive) {
+            return;
         }
-        if (this.monsterAI.monsterType == 'normalMonster') {
-            this.monsterAI.currentState = 'Attack'
 
-        } else {
-            const { SkillManage } = this.getState()
-            SkillManage.createBullet(
-                this.heroManage.hero,
-                this.monster,
-                "MagicProjectile",
-                'monster',
-                this.monsterAI.damage
-            );
+        const action = this.monsterAI.animate.actions.Attack;
+        if (!action) return;
+
+        // 更新冷却计时器
+        if (this.cooldownTimer > 0) {
+            this.cooldownTimer -= delta;
+        }
+
+        // 如果冷却完成且动画未播放,开始新的攻击
+        if (this.cooldownTimer <= 0 && !action.isRunning()) {
+            this.beginAttack();
+            return;
+        }
+
+        // 监测动画进度,触发伤害
+        if (action.isRunning()) {
+            this.checkAttackTiming(action);
         }
     }
 
-    startAttackLoop() {
-        this.autoAttack = true
+    beginAttack() {
+        const action = this.monsterAI.animate.actions.Attack;
+        if (!action) return;
+
+        // 重置状态
+        this.hasTriggeredAttack = false;
+        this.cooldownTimer = this.attackCooldown;
+
+        // 播放攻击动画
+        action.reset();
+        action.setLoop(THREE.LoopOnce, 1);
+        action.clampWhenFinished = true;
+        action.play();
     }
 
-    stopAttackLoop() {
-        this.autoAttack = false
+    checkAttackTiming(action) {
+        // 如果已经触发过伤害,跳过
+        if (this.hasTriggeredAttack) return;
+
+        const clip = action.getClip();
+        const normalizedTime = action.time / clip.duration;
+
+        // 当动画进度达到指定时间点时,触发攻击
+        if (normalizedTime >= this.attackAnimateTime) {
+            this.Attack();
+            this.hasTriggeredAttack = true;
+        }
+    }
+
+    stopAttackAnimation() {
+        const action = this.monsterAI.animate.actions.Attack;
+        if (action && action.isRunning()) {
+            action.stop();
+        }
+    }
+
+    Attack() {
+        if (!this.heroManage.state.isAlive) return;
+
+        const SkillManage = this.getState().SkillManage;
+        SkillManage.createBullet(
+            this.heroManage.hero,
+            this.monsterAI.monster,
+            "MagicProjectile",
+            "monster",
+            this.monsterAI.damage
+        );
     }
 
     dispose() {
-        if (this.attackTimer) clearInterval(this.attackTimer);
-        const { removeLoop } = useGameStore.getState();
-        if (this.updateFn && removeLoop) removeLoop(this.updateFn);
-        this.updateFn = null;
+        this.stopAutoAttack();
+        const { removeLoop } = this.getState();
+        if (this.updateFn && removeLoop) {
+            removeLoop(this.updateFn);
+        }
     }
 }
 

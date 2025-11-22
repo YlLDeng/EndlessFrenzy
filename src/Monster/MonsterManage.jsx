@@ -126,7 +126,7 @@ class MonsterManage {
     handelHeroDeath() {
         this.monsterAIs.forEach(AI => {
             AI.stopUpdate = true
-            AI.attack.stopAttackLoop()
+            AI.attack.stopAutoAttack()
             AI.currentState = 'Win'
         })
     }

@@ -19,7 +19,7 @@ class Btn {
         // });
         this.txt.innerHTML = 'addMonsters'
         this.txt.onclick = () => {
-            this.getState().MonsterManage.addMonsters("normalMonster")
+            // this.getState().MonsterManage.addMonsters("normalMonster")
             this.getState().MonsterManage.addMonsters("rangedMonster")
         }
     }

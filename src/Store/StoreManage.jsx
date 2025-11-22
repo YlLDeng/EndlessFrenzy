@@ -38,11 +38,11 @@ export const monsterDict = {
     },
     "rangedMonster": {
         stopDistance: 15,
-        damage: 1,
+        damage: 0,
         deathExperience: 1,
         maxHealth: 5,
         attackSpeed: 1.0,
-        attackAnimateTime: 0.7,
+        attackAnimateTime: 0.3,
         AnimationStates: {
             Run: {
                 from: ['Attack'],

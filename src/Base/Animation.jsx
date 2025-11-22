@@ -17,6 +17,12 @@ class Animation {
         this.lastState = null;
         this.fadeing = false;
         this.playingDeathAnima = false
+
+        this.events = {
+            "loop": [],
+            "finished": [],
+        }
+
         this.init();
     }
 
@@ -48,19 +54,36 @@ class Animation {
         this.lastState = this.defaultState;
     };
 
+    on(eventName, handler) {
+        if (!this.events[eventName]) {
+            this.events[eventName] = [];
+        }
+        this.events[eventName].push(handler);
+    }
+
+    emit(eventName, ...args) {
+        const handlers = this.events[eventName];
+        if (handlers) {
+            handlers.forEach(handler => handler(...args));
+        }
+    }
+
+    off(eventName, handler) {
+        const handlers = this.events[eventName];
+        if (handlers) {
+            this.events[eventName] = handlers.filter(h => h !== handler);
+        }
+    }
+
     bindEvent() {
         this.mixer.addEventListener('finished', (e) => {
             const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
+            this.emit('finished', finishedActionName);
         });
 
         this.mixer.addEventListener('loop', (e) => {
             const finishedActionName = Object.keys(this.actions).find(key => this.actions[key] === e.action);
-            if (finishedActionName == 'Attack') {
-                const heroAttack = this.getState().HeroManage.HeroAttack;
-                if (heroAttack) {
-                    heroAttack.isAttacking = false;
-                }
-            }
+            this.emit('loop', finishedActionName);
         });
     }
 

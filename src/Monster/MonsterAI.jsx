@@ -1,7 +1,5 @@
 import { useGameStore, monsterDict } from '../Store/StoreManage';
-import { gsap } from 'gsap';
 import * as THREE from 'three';
-import MonsterAnimate from './MonsterAnimate'
 import MonsterControl from './MonsterControl'
 import MonsterAttack from './MonsterAttack'
 import ExperienceBall from '../Base/ExperienceBall'
@@ -89,7 +87,7 @@ class MonsterAI {
 
     death() {
         this.isAlive = false
-        this.attack.stopAttackLoop()
+        this.attack.stopAutoAttack()
         this.currentState = 'Death'
         this.collisionManager.unregister(this.id);
         new ExperienceBall(this.deathExperience, this.monster.position)

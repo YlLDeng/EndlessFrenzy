@@ -63,6 +63,12 @@ class HeroManage extends HeroBasics {
         this.HeroExperience = new HeroExperience(this.hero, this.scene)
         this.healthBar = new HealthBar(this.hero, this.state.health, 3.3)
         this.txt = new Txt(this.hero, 3.3)
+
+        this.HeroAnimate.on("loop", (name) => {
+            if (name == 'Attack' && this.HeroAttack) {
+                this.HeroAttack.isAttacking = false;
+            }
+        })
         this.initCollision()
     }
 
