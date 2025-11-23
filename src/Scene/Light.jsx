@@ -9,20 +9,20 @@ class Light {
     }
 
     init() {
-        this.dirLight = new THREE.DirectionalLight(0xffffff, 14);
+        this.dirLight = new THREE.DirectionalLight(0xffffff, 19);
         this.dirLight.position.set(-4, 10, -3);
         this.dirLight.castShadow = true;
 
         const shadowCam = this.dirLight.shadow.camera;
 
-        const shadowSize = 30;
+        const shadowSize = 100;
         shadowCam.top = shadowSize;
         shadowCam.right = shadowSize;
         shadowCam.bottom = -shadowSize;
         shadowCam.left = -shadowSize;
 
         shadowCam.near = 0.5;
-        shadowCam.far = 15;
+        shadowCam.far = shadowSize;
         this.dirLight.shadow.mapSize.set(2048, 2048);
         this.dirLight.shadow.radius = 4.0
         // const helper = new THREE.CameraHelper(shadowCam);

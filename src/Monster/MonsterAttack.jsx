@@ -77,13 +77,11 @@ class MonsterAttack {
     }
 
     checkAttackTiming(action) {
-        // 如果已经触发过伤害,跳过
         if (this.hasTriggeredAttack) return;
 
         const clip = action.getClip();
         const normalizedTime = action.time / clip.duration;
 
-        // 当动画进度达到指定时间点时,触发攻击
         if (normalizedTime >= this.attackAnimateTime) {
             this.Attack();
             this.hasTriggeredAttack = true;

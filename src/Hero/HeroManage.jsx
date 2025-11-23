@@ -7,7 +7,6 @@ import HeroExperience from './HeroExperience';
 import HealthBar from '../Base/HealthBar'
 import Txt from '../Base/Txt'
 import Animation from '../Base/Animation'
-
 class HeroManage extends HeroBasics {
     constructor(scene, followGroup, camera, heroName) {
         super()

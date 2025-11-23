@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from 'react';
-
 import ActionManage from '../Action/ActionManage';
 
 import { createMainCamera } from './Camera';
@@ -8,6 +7,7 @@ import Light from './Light';
 import Floor from './Floor';
 
 import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
+import GameUI from '../GameUI/GameUI'
 
 class GameScene {
     constructor(container) {
@@ -159,7 +159,7 @@ const CharacterController = () => {
         if (!containerRef.current) return;
 
         // 创建游戏场景实例（传入 DOM 容器）
-        sceneInstanceRef.current = new GameScene(containerRef.current);
+        // sceneInstanceRef.current = new GameScene(containerRef.current);
 
         // 组件卸载时销毁场景
         return () => {
@@ -169,16 +169,19 @@ const CharacterController = () => {
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            style={{
-                width: '100vw',
-                height: '100vh',
-                margin: 0,
-                padding: 0,
-                overflow: 'hidden',
-            }}
-        />
+        <>
+            <div
+                ref={containerRef}
+                style={{
+                    width: '100vw',
+                    height: '100vh',
+                    margin: 0,
+                    padding: 0,
+                    overflow: 'hidden',
+                }}
+            />
+            <GameUI></GameUI>
+        </>
     );
 };
 

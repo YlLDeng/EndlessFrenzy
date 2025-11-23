@@ -18,14 +18,16 @@ class MonsterAI {
         this.monsterAnimate = animate
         this.monsterType = type
 
-        this.pixelRatio = window.devicePixelRatio || 1;
+        this.pixelRatio = window.devicePixelRatio;
 
         this.AnimationStates = monsterDict[this.monster.monsterType].AnimationStates || {}
-        this.maxHealth = monsterDict[this.monster.monsterType].maxHealth || 5;
-        this.deathExperience = monsterDict[this.monster.monsterType].deathExperience || 1;
-        this.attackSpeed = monsterDict[this.monster.monsterType].attackSpeed || 1.0
-        this.attackAnimateTime = monsterDict[this.monster.monsterType].attackAnimateTime || 0.2
-        this.damage = monsterDict[this.monster.monsterType].damage || 1
+        this.maxHealth = monsterDict[this.monster.monsterType].maxHealth;
+
+        this.deathExperience = monsterDict[this.monster.monsterType].deathExperience;
+        this.attackSpeed = monsterDict[this.monster.monsterType].attackSpeed
+        this.attackAnimateTime = monsterDict[this.monster.monsterType].attackAnimateTime
+        this.damage = monsterDict[this.monster.monsterType].damage
+        console.log(monsterDict[this.monster.monsterType].damage)
         this.health = this.maxHealth;
 
         this.id = THREE.MathUtils.generateUUID();

@@ -89,6 +89,7 @@ class MagicProjectile {
             console.error("Bullet model is not set.");
             return;
         }
+        this.bulletModel.visible = true;
         this.scene.add(this.bulletModel);
         this.shotTarget();
         this.initCollision();
@@ -109,7 +110,7 @@ class MagicProjectile {
         const heroPos = new THREE.Vector3();
         this.self.getWorldPosition(heroPos);
 
-        const heroForward = new THREE.Vector3(0, 1.7, 2);
+        const heroForward = new THREE.Vector3(0, 1, 2);
         heroForward.applyQuaternion(this.self.quaternion);
         const startPos = heroPos.addScaledVector(heroForward, 1.0);
 
@@ -117,7 +118,6 @@ class MagicProjectile {
         this.target.getWorldPosition(targetPos);
         targetPos.y += 0.5;
         this.bulletModel.position.copy(startPos);
-        this.bulletModel.visible = true;
         this.isFlying = true;
         this.isHit = false;
 

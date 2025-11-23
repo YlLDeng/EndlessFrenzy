@@ -3,8 +3,8 @@ import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
 import HeroManage from '../Hero/HeroManage';
 import MonsterManage from '../Monster/MonsterManage';
 import SkillManage from '../Skill/SkillManage';
-import UIManage from '../UI/UIManage';
 import CollisionManager from '../Base/CollisionManager';
+
 class ActionManage {
     constructor() {
         this.setData = useGameStore.getState().setData
@@ -20,7 +20,6 @@ class ActionManage {
         const { scene, camera, followGroup, setData } = useGameStore.getState();
 
         setData('CollisionManager', new CollisionManager());
-        setData('UIManage', new UIManage());
 
         const _SkillManage = new SkillManage();
         setData('SkillManage', _SkillManage);

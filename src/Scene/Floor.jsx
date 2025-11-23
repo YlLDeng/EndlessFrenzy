@@ -1,6 +1,6 @@
 // src/components/SceneElements.jsx
+import { loadGLTFModel, createFixedCollisionBox } from '../Utils/Utils';
 import { useGameStore } from '../Store/StoreManage';
-
 class Floor {
     constructor(scene, renderer) {
         this.setData = useGameStore.getState().setData
@@ -8,7 +8,7 @@ class Floor {
         this.scene = scene
 
         this.size = 200;
-        this.repeat = 16;
+        this.repeat = 24;
         this.maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
         this.plane = null
         this.init()
@@ -16,6 +16,7 @@ class Floor {
 
     init() {
         this.createFloor()
+        // this.load()
     }
 
     createFloor = () => {
@@ -50,6 +51,25 @@ class Floor {
         this.scene.add(floor);
         this.floorDecal = (this.size / this.repeat) * 4
     };
+
+
+    async load() {
+        const gltf = await loadGLTFModel("/Model/Map/map.glb");
+        gltf.scene.position.copy({
+            "x": 0,
+            "y": -137.7,
+            "z": 0
+        })
+        gltf.scene.scale.set(8, 8, 8)
+        this.scene.add(gltf.scene)
+        gltf.scene.traverse((obj) => {
+            if (obj.isMesh) {
+                obj.castShadow = true;
+                obj.receiveShadow = true;
+            }
+        });
+        window.f = gltf.scene
+    }
 }
 
 export default Floor
