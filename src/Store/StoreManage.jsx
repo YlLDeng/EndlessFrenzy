@@ -5,7 +5,7 @@ import * as THREE from 'three';
 export const monsterDict = {
     "normalMonster": {
         stopDistance: 3,
-        damage: 0,
+        damage: 1,
         deathExperience: 2,
         attackSpeed: 1.0,
         attackAnimateTime: 0.2,  // 在攻击动画的什么时间开始触发攻击函数
@@ -38,7 +38,7 @@ export const monsterDict = {
     },
     "rangedMonster": {
         stopDistance: 15,
-        damage: 0,
+        damage: 1,
         deathExperience: 1,
         maxHealth: 5,
         attackSpeed: 1.0,

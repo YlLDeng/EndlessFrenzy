@@ -4,28 +4,7 @@ import { useGameStore } from '../Store/StoreManage';
 import CircularProgressAvatar from './Component/CircularProgressAvatar'
 import { Icon, HeroIcon, SkillIcon, equipIcon } from './Component/Icon'
 const GameUI = () => {
-    // console.log("GameUI")
-    const [stats, setStats] = useState({
-        damage: 0,
-        power: 0,
-        armor: 0,
-        magic_resistance: 0,
-        attackSpeed: 0,
-        cooldown: 0,
-        criticalStrike: 0,
-        movementSpeed: 0,
-        maxHealth: 0,
-        health: 0,
-        experience: 0,
-        buff: [],
-        debuff: [],
-        mana: 0,
-        maxMana: 0,
-        revertHealth: 0,
-        revertMana: 0,
-        level: 0,
-        equip: ["", "", "", "", "", ""],
-    })
+    const [stats, setStats] = useState({ ...useGameStore.getState().HeroManage?.state })
 
     const heroSkillIcon = useRef({
         Passive: { icon: SkillIcon.Caitlyn_Headshot },
@@ -55,32 +34,17 @@ const GameUI = () => {
         const intervalId = setInterval(() => {
             const heroState = gameStore.HeroManage?.state;
             if (heroState) {
-                setStats({
-                    damage: heroState.damage,
-                    power: heroState.power,
-                    armor: heroState.armor,
-                    magic_resistance: heroState.magic_resistance,
-                    attackSpeed: heroState.attackSpeed,
-                    cooldown: heroState.cooldown,
-                    criticalStrike: heroState.criticalStrike,
-                    movementSpeed: heroState.movementSpeed,
-                    maxHealth: heroState.maxHealth,
-                    health: heroState.health,
-                    experience: heroState.experience,
-                    buff: heroState.buff,
-                    debuff: heroState.debuff,
-                    mana: heroState.mana,
-                    maxMana: heroState.maxMana,
-                    revertHealth: heroState.revertHealth,
-                    revertMana: heroState.revertMana,
-                    equip: heroState.equip,
-                    level: heroState.level,
+                setStats(prevStats => {
+                    const newStats = { ...heroState };
+                    if (JSON.stringify(prevStats) === JSON.stringify(newStats)) {
+                        return prevStats;
+                    }
+                    return newStats;
                 });
             }
-        }, 1000);
-        return () => {
-            clearInterval(intervalId);
-        };
+        }, 500);
+
+        return () => clearInterval(intervalId);
     }, []);
 
     return (

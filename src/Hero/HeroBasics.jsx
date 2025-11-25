@@ -12,7 +12,7 @@ class HeroBasics {
         maxMana: 10,   //最大法力值
         revertMana: 0, //法力恢复
 
-        damage: 2.2, //攻击力
+        damage: 1, //攻击力
         attackSpeed: 3.0,//攻击速度
 
         experience: 0, //当前经验

@@ -151,13 +151,15 @@ class HeroAttack extends HeroBasics {
     createBullet = () => {
         if (!this.nearestMonster || !this.nearestMonster.monsterAI.isAlive) return;
         const { SkillManage } = this.getState()
-        SkillManage.createBullet(
-            this.nearestMonster,
-            this.model,
-            "NormalBullet",
-            'hero',
-            this.state.damage
-        );
+        this.state.skill.forEach(item => {
+            SkillManage.createBullet(
+                this.nearestMonster,
+                this.model,
+                item,
+                'hero',
+                this.state.damage
+            );
+        })
     }
 
     interruptAttack() {
