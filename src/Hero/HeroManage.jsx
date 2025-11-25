@@ -18,19 +18,19 @@ class HeroManage extends HeroBasics {
         this.followGroup = followGroup
         this.camera = camera
 
-        this.HeroExperience = null
+
         this.HeroControl = null
         this.HeroAttack = null
         this.animations = null
         this.hero = null
-        this.healthBar = null
         this.collisionBoxMesh = null
 
         this.loadModel = useHeroModelDict.getState()[heroName]
         this.loadPromise = this.init();
         this.isInvulnerable = false;
         this.id = THREE.MathUtils.generateUUID();
-        this.INVULNERABILITY_DURATION = 1
+        this.INVULNERABILITY_DURATION = 1  //无敌帧
+        this.maxExperience = 10
         this.tag = 'hero';
         this.AnimationStates = {
             Idle: {
@@ -59,8 +59,8 @@ class HeroManage extends HeroBasics {
         this.HeroAnimate = new Animation(this.hero, this.animations, this.AnimationStates, this.state, 'Idle')
         this.HeroControl = new HeroControl(this.hero)
         this.HeroAttack = new HeroAttack(this.hero)
-        this.HeroExperience = new HeroExperience(this.hero, this.scene)
-        this.healthBar = new HealthBar(this.hero, this.state.health, 3.3)
+        this.HeroExperience = new HeroExperience(this.hero)
+
         this.txt = new Txt(this.hero, 3.3)
 
         this.HeroAnimate.on("loop", (name) => {
@@ -87,7 +87,6 @@ class HeroManage extends HeroBasics {
 
         if (otherObject.tag == 'bullet' && otherObject.mesh.from == 'monster') {
             this.state.health -= otherObject.mesh.damage;
-            this.healthBar.updateHealth(this.state.health)
             this.startInvulnerability();
         }
 
@@ -95,7 +94,6 @@ class HeroManage extends HeroBasics {
             this.state.health -= 1;
             this.txt.showTxt(1, 2.5, '#5d0707ff')
 
-            this.healthBar.updateHealth(this.state.health)
             this.startInvulnerability();
         }
 
@@ -108,7 +106,6 @@ class HeroManage extends HeroBasics {
         this.state.currentState = 'Death'
         this.state.isAlive = false
         this.getState().MonsterManage.handelHeroDeath()
-        this.HeroExperience.hiddenBar()
         this.HeroAnimate.heroDeathAnimate()
         this.collisionManager.unregister(this.id)
     }
@@ -143,12 +140,15 @@ class HeroManage extends HeroBasics {
     };
 
     addExperience(experience) {
-        this.HeroExperience.updateExperience(experience)
+        this.state.experience += experience
+        while (this.state.experience >= this.maxExperience) {
+            this.state.experience -= this.maxExperience;
+            this.upLevel();
+        }
     }
 
     upLevel() {
         this.state.level += 1
-        console.log(this.state.level)
     }
 
     dispose() {

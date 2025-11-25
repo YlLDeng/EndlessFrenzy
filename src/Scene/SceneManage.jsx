@@ -1,19 +1,19 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ActionManage from '../Action/ActionManage';
 
 import { createMainCamera } from './Camera';
 import Controls from './Controls';
 import Light from './Light';
 import Floor from './Floor';
-
-import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
 import GameUI from '../GameUI/GameUI'
+import { useGameStore, useDefaultSetting } from '../Store/StoreManage';
 
 class GameScene {
     constructor(container) {
         this.setData = useGameStore.getState().setData
         this.getState = useGameStore.getState
         this.container = container
+        console.log("new GameScene")
         this.init()
     }
 
@@ -149,23 +149,27 @@ class GameScene {
 }
 
 const CharacterController = () => {
-    // DOM 容器引用（渲染器挂载点）
     const containerRef = useRef(null);
-    // 游戏场景实例引用（避免重复创建）
     const sceneInstanceRef = useRef(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // 初始化场景（组件挂载时）
     useEffect(() => {
-        if (!containerRef.current) return;
-
-        // 创建游戏场景实例（传入 DOM 容器）
-        // sceneInstanceRef.current = new GameScene(containerRef.current);
-
-        // 组件卸载时销毁场景
+        if (!containerRef.current || sceneInstanceRef.current) return;
+        sceneInstanceRef.current = new GameScene(containerRef.current);
         return () => {
             sceneInstanceRef.current?.dispose();
             sceneInstanceRef.current = null;
         };
+    }, []);
+
+    useEffect(() => {
+        const checkTime = setInterval(() => {
+            if (useGameStore.getState()?.ActionManage?.loadFinish) {
+                clearInterval(checkTime);
+                setIsLoading(true);
+            }
+        }, 100);
+        return () => clearInterval(checkTime);
     }, []);
 
     return (
@@ -180,7 +184,7 @@ const CharacterController = () => {
                     overflow: 'hidden',
                 }}
             />
-            <GameUI></GameUI>
+            {isLoading && <GameUI />}
         </>
     );
 };

@@ -25,6 +25,7 @@ class HeroAttack extends HeroBasics {
         useGameStore.getState().addLoop((delta) => {
             this.update(delta);
         });
+
     }
     updateAttackLoop() {
         if (this.attackTimer) clearInterval(this.attackTimer);

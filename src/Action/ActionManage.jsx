@@ -9,6 +9,7 @@ class ActionManage {
     constructor() {
         this.setData = useGameStore.getState().setData
         this.getState = useGameStore.getState
+        this.loadFinish = false
         this.init()
     }
 
@@ -32,6 +33,8 @@ class ActionManage {
         const _MonsterManage = new MonsterManage(scene);
         setData('MonsterManage', _MonsterManage);
         await _MonsterManage.loadPromise;
+
+        this.loadFinish = true
 
 
     }
