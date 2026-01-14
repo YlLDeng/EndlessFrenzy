@@ -57,6 +57,7 @@ class NormalBullet {
             return;
         }
         this.scene.add(this.bulletModel);
+        this.bulletModel.hitTargets = new Set();
         this.shotTarget();
         this.initCollision();
     }

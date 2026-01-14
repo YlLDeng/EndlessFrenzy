@@ -2,6 +2,8 @@
 import { useGameStore, useBulletModelDict } from '../Store/StoreManage';
 import NormalBullet from './NormalBullet';
 import MagicProjectile from './MagicProjectile';
+import EzrealUltimate from './EzrealUltimate';
+
 import { loadGLTFModel } from '../Utils/Utils'
 class SkillManage {
     constructor() {
@@ -11,6 +13,7 @@ class SkillManage {
         this.BulletClassMap = {
             NormalBullet,
             MagicProjectile,
+            EzrealUltimate
         };
         this.init()
     }
@@ -22,11 +25,12 @@ class SkillManage {
                 const gltf = await loadGLTFModel(path)
                 this.bulletModelCache[type] = gltf.scene
             } else {
-                this.bulletModelCache[type] = "MagicProjectile"
+                this.bulletModelCache[type] = "shaderBullet"
             }
         }
         );
         await Promise.all(loadPromises);
+
     }
 
     createBullet(targetMesh, self, type = 'NormalBullet', from, damage) {
@@ -34,9 +38,11 @@ class SkillManage {
         if (!sourceModel) {
             return;
         }
-        const newBulletMesh = sourceModel.clone();
+
         const BulletClass = this.BulletClassMap[type];
+        const newBulletMesh = sourceModel == 'shaderBullet' ? '' : sourceModel.clone();
         const newBulletInstance = new BulletClass(targetMesh, self, newBulletMesh, from, damage);
+
         newBulletInstance.create();
         return newBulletInstance;
     }

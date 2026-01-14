@@ -36,7 +36,10 @@ class ActionManage {
 
         this.loadFinish = true
 
-
+        useGameStore.getState().MonsterManage.addMonsters("rangedMonster")
+        setInterval(() => {
+            useGameStore.getState().MonsterManage.addMonsters("rangedMonster")
+        }, 3000)
     }
 }
 

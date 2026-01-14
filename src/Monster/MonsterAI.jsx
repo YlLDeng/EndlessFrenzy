@@ -27,7 +27,6 @@ class MonsterAI {
         this.attackSpeed = monsterDict[this.monster.monsterType].attackSpeed
         this.attackAnimateTime = monsterDict[this.monster.monsterType].attackAnimateTime
         this.damage = monsterDict[this.monster.monsterType].damage
-        console.log(monsterDict[this.monster.monsterType].damage)
         this.health = this.maxHealth;
 
         this.id = THREE.MathUtils.generateUUID();
@@ -72,6 +71,11 @@ class MonsterAI {
     }
 
     handleCollision(otherObject) {
+        // if (otherObject?.mesh?.hitTargets.has(this.id)) {
+        //     return;
+        // }
+        // otherObject.mesh.hitTargets.add(this.id);
+
         if (otherObject.tag === 'bullet' && otherObject.mesh.from === 'hero') {
             this.onHit(otherObject.mesh.damage);
         }

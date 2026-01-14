@@ -4,8 +4,8 @@ class HeroBasics {
         isAlive: true,
         level: 1,   //等级
 
-        health: 5,
-        maxHealth: 5,
+        health: 10,
+        maxHealth: 10,
         revertHealth: 0,
 
         mana: 10,      //法力值
@@ -13,7 +13,7 @@ class HeroBasics {
         revertMana: 0, //法力恢复
 
         damage: 1, //攻击力
-        attackSpeed: 3.0,//攻击速度
+        attackSpeed: 8.0,//攻击速度
 
         experience: 0, //当前经验
         experienceScope: 2, //吸附范围

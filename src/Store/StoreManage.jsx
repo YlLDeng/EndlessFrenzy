@@ -74,7 +74,8 @@ export const monsterDict = {
 // 子弹模型加载路径字典
 export const useBulletModelDict = create((set) => ({
     'NormalBullet': '/Model/Bullet/bullet.glb',
-    'MagicProjectile': '/Model/Bullet/bullet.glb'
+    'MagicProjectile': '',
+    'EzrealUltimate': ''
 }));
 
 

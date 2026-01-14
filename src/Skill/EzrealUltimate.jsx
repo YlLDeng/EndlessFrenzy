@@ -1,7 +1,7 @@
 import { useGameStore } from '../Store/StoreManage';
 import * as THREE from 'three';
 
-class MagicProjectile {
+class EzrealUltimate {
     constructor(target, self, bulletMesh, from, damage) {
         this.setData = useGameStore.getState().setData;
         this.getState = useGameStore.getState;
@@ -11,7 +11,7 @@ class MagicProjectile {
         this.target = target;
         this.bulletModel = null;
 
-        this.speed = 7;
+        this.speed = 17;
         this.isFlying = false;
         this.isHit = false;
         this.scene = this.getState().scene;
@@ -32,50 +32,9 @@ class MagicProjectile {
     }
 
     initModel() {
-        const geometry = new THREE.SphereGeometry(0.12, 32, 32);
-        const material = new THREE.ShaderMaterial({
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            uniforms: {
-                uTime: { value: 0 },
-                uColor: { value: new THREE.Color(1.0, 0.2, 0.2) },
-            },
-            vertexShader: `
-                        varying vec2 vUv;
-                        varying vec3 vPos;
-                        void main() {
-                            vUv = uv;
-                            vPos = position;
-                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                        }
-                    `,
-            fragmentShader: `
-                        uniform float uTime;
-                        uniform vec3 uColor;
-        
-                        varying vec2 vUv;
-                        varying vec3 vPos;
-        
-                        float noise(vec3 p){
-                            return fract(sin(dot(p ,vec3(12.9898,78.233, 37.719))) * 43758.5453);
-                        }
-        
-                        void main(){
-                            float core = 1.0 - length(vPos) * 1.6;
-        
-                            float pulse = noise(vPos * 4.0 + uTime * 6.0);
-                            float glow = smoothstep(0.2, 1.0, core + pulse * 0.3);
-        
-                            vec3 color = uColor * glow * 2.0;
-        
-                            float alpha = glow;
-                            if(alpha < 0.05) discard;
-        
-                            gl_FragColor = vec4(color, alpha);
-                        }
-                    `
-        });
+        const geometry = new THREE.PlaneGeometry(5, 2);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide }
+        );
 
         this.bulletModel = new THREE.Mesh(geometry, material);
         this.bulletModel.visible = false;
@@ -90,8 +49,8 @@ class MagicProjectile {
             return;
         }
         this.bulletModel.visible = true;
-        this.scene.add(this.bulletModel);
         this.bulletModel.hitTargets = new Set();
+        this.scene.add(this.bulletModel);
         this.shotTarget();
         this.initCollision();
     }
@@ -130,13 +89,7 @@ class MagicProjectile {
     }
 
     handleCollision(otherObject) {
-        if (otherObject.tag == 'monster' || otherObject.tag == 'hero') {
-            this.collisionManager.unregister(this.id);
-            if (this.isHit) return;
-            this.isHit = true;
-            this.isFlying = false;
-            this.destroy();
-        }
+
     }
 
     update = (delta) => {
@@ -175,4 +128,4 @@ class MagicProjectile {
     }
 }
 
-export default MagicProjectile;
+export default EzrealUltimate;

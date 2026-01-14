@@ -150,7 +150,7 @@ const GameUI = () => {
                 </div>
 
                 {/* 装备 */}
-                <div className='equipBox'>
+                <div className='equipBox' onClick={() => { useGameStore.getState().MonsterManage.addMonsters("rangedMonster") }}>
                     <div className='equipInLeftBox'>
                         <div className='equipInBox'>
                             {
